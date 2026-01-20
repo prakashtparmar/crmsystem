@@ -126,51 +126,69 @@
 
 
                     <!-- Agriculture + Finance -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <section class="space-y-2">
-                            <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Agriculture
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <x-forms.input label="Land Area" name="land_area" />
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Agriculture -->
+    <section class="space-y-2">
+        <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Agriculture</h3>
 
-                                <div class="flex flex-col">
-                                    <label class="block text-sm font-medium mb-1">Land Unit</label>
-                                    <select name="land_unit"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                                        @foreach (['acre', 'hectare', 'bigha'] as $u)
-                                            <option value="{{ $u }}" @selected(old('land_unit', 'acre') == $u)>
-                                                {{ ucfirst($u) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="w-full">
+                <x-forms.input label="Land Area" name="land_area" />
+            </div>
 
-                                <x-forms.input label="Primary Crops" name="primary_crops" />
-                                <x-forms.input label="Secondary Crops" name="secondary_crops" />
+            <div class="flex flex-col w-full">
+                <label class="block text-sm font-medium mb-1">Land Unit</label>
+                <select name="land_unit"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                    @foreach (['acre','hectare','bigha'] as $u)
+                        <option value="{{ $u }}" @selected(old('land_unit','acre') == $u)>
+                            {{ ucfirst($u) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-                                <div class="flex flex-col">
-                                    <label class="block text-sm font-medium mb-1">Irrigation Type</label>
-                                    <select name="irrigation_type"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                                        @foreach (['rainfed', 'canal', 'drip', 'sprinkler', 'borewell'] as $i)
-                                            <option value="{{ $i }}" @selected(old('irrigation_type') == $i)>
-                                                {{ ucfirst($i) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                        </section>
+            <div class="w-full">
+                <x-forms.input label="Primary Crops" name="primary_crops" />
+            </div>
 
-                        <section class="space-y-2">
-                            <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Financial</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <x-forms.input label="Credit Limit" name="credit_limit"
-                                    value="{{ old('credit_limit', 0) }}" />
-                                <x-forms.input label="Outstanding Balance" name="outstanding_balance"
-                                    value="{{ old('outstanding_balance', 0) }}" />
-                                <x-forms.input label="Credit Valid Till" name="credit_valid_till" type="date" />
-                            </div>
-                        </section>
-                    </div>
+            <div class="w-full">
+                <x-forms.input label="Secondary Crops" name="secondary_crops" />
+            </div>
+
+            <div class="flex flex-col w-full">
+                <label class="block text-sm font-medium mb-1">Irrigation Type</label>
+                <select name="irrigation_type"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                    @foreach (['rainfed','canal','drip','sprinkler','borewell'] as $i)
+                        <option value="{{ $i }}" @selected(old('irrigation_type') == $i)>
+                            {{ ucfirst($i) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Financial -->
+    <section class="space-y-2">
+        <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Financial</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="w-full">
+                <x-forms.input label="Credit Limit" name="credit_limit" value="{{ old('credit_limit',0) }}" />
+            </div>
+
+            <div class="w-full">
+                <x-forms.input label="Outstanding Balance" name="outstanding_balance" value="{{ old('outstanding_balance',0) }}" />
+            </div>
+
+            <div class="w-full">
+                <x-forms.input label="Credit Valid Till" name="credit_valid_till" type="date" />
+            </div>
+        </div>
+    </section>
+</div>
 
 
 
@@ -199,7 +217,7 @@
                     </section>
 
                     <!-- Optional Business Details -->
-<section class="space-y-1.5">
+<section class="space-y-2">
     <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
         Optional Business Details
     </h3>
@@ -219,8 +237,9 @@
     </div>
 </section>
 
+
 <!-- Optional Location -->
-<section class="space-y-1.5">
+<section class="space-y-2">
     <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
         Optional Location
     </h3>
@@ -235,6 +254,7 @@
         </div>
     </div>
 </section>
+
 
 
                     <!-- Actions -->
