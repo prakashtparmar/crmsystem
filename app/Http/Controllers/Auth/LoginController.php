@@ -40,6 +40,12 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        // Update last login info (added only this part)
+        $user = Auth::user();
+        $user->last_login_at = now();
+        $user->last_login_ip = $request->ip();
+        $user->save();
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

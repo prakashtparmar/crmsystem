@@ -1,0 +1,416 @@
+<x-layouts.app>
+
+    <!-- Breadcrumbs -->
+    <div class="mb-6 flex items-center text-sm text-gray-500 dark:text-gray-400">
+        <a href="{{ route('dashboard') }}" class="text-blue-600 dark:text-blue-400 hover:underline">Dashboard</a>
+        <span class="mx-2">›</span>
+        <a href="{{ route('orders.index') }}" class="text-blue-600 dark:text-blue-400 hover:underline">Orders</a>
+        <span class="mx-2">›</span>
+        <span>View</span>
+    </div>
+
+@if (session('success'))
+    <div class="mb-4 p-3 rounded-lg bg-green-100 border border-green-200 text-green-700 dark:text-green-700">
+        {{ session('success') }}
+    </div>
+@elseif (session('error'))
+    <div class="mb-4 p-3 rounded-lg bg-red-100 border border-red-200 text-red-700 dark:text-red-700">
+        {{ session('error') }}
+    </div>
+@endif
+
+
+
+
+
+
+
+    <!-- Header -->
+    <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
+                {{ $order->order_code }}
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">
+                {{ $order->customer_name }}
+            </p>
+        </div>
+
+        <span
+            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize
+            {{ $order->status === 'delivered'
+                ? 'bg-green-100 text-green-700'
+                : ($order->status === 'cancelled'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-blue-100 text-blue-700') }}">
+            {{ $order->status }}
+        </span>
+    </div>
+
+    @php
+        $steps = ['draft', 'confirmed', 'processing', 'shipped', 'delivered'];
+        $currentIndex = array_search($order->status, $steps);
+        $shipment = $order->shipments->last();
+    @endphp
+
+    <!-- Lifecycle -->
+    <div class="mb-8 bg-white dark:bg-gray-800 border rounded-xl p-4">
+        <div class="flex items-center justify-between">
+            @foreach ($steps as $i => $step)
+                <div class="flex items-center w-full">
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold
+                            {{ $order->status === 'cancelled'
+                                ? 'bg-red-500 text-white'
+                                : ($i <= $currentIndex
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-200 text-gray-500') }}">
+                            {{ $i + 1 }}
+                        </div>
+                        <div
+                            class="mt-1 text-[11px] uppercase tracking-wide
+                            {{ $i <= $currentIndex ? 'text-blue-600' : 'text-gray-400' }}">
+                            {{ ucfirst($step) }}
+                        </div>
+                    </div>
+                    @if (!$loop->last)
+                        <div class="flex-1 h-px mx-2 {{ $i < $currentIndex ? 'bg-blue-600' : 'bg-gray-200' }}"></div>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+    <!-- Order Details -->
+    <div class="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-4 text-[12px]">
+        <h3 class="text-xs font-semibold uppercase tracking-wide mb-3">Order Details</h3>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-2">
+            <div>
+                <span class="block text-gray-400">Order Date</span>
+                <span>{{ $order->order_date?->format('d M Y') }}</span>
+            </div>
+
+            <div>
+                <span class="block text-gray-400">Expected Delivery</span>
+                <span>{{ $order->expected_delivery_at?->format('d M Y') ?? '—' }}</span>
+            </div>
+
+            <div>
+                <span class="block text-gray-400">Payment Status</span>
+                <span class="font-medium">{{ ucfirst($order->payment_status) }}</span>
+            </div>
+
+            <div>
+                <span class="block text-gray-400">Payment Method</span>
+                <span>{{ $order->payment_method ?? '—' }}</span>
+            </div>
+
+            <div>
+                <span class="block text-gray-400">Transaction ID</span>
+                <span class="font-mono text-xs">{{ $order->transaction_id ?? '—' }}</span>
+            </div>
+
+            <div>
+                <span class="block text-gray-400">Paid At</span>
+                <span>{{ $order->paid_at?->format('d M Y H:i') ?? '—' }}</span>
+            </div>
+
+            <div>
+                <span class="block text-gray-400">Completed At</span>
+                <span>{{ $order->completed_at?->format('d M Y H:i') ?? '—' }}</span>
+            </div>
+
+            <div>
+                <span class="block text-gray-400">Created</span>
+                <span>{{ $order->created_at?->format('d M Y H:i') }}</span>
+            </div>
+
+            <div class="col-span-2 sm:col-span-3 lg:col-span-4 pt-2">
+                <span class="block text-gray-400">Billing Address</span>
+                <div class="leading-snug">{{ $order->billing_address ?? '—' }}</div>
+            </div>
+
+            <div class="col-span-2 sm:col-span-3 lg:col-span-4 pt-2">
+                <span class="block text-gray-400">Shipping Address</span>
+                <div class="leading-snug">{{ $order->shipping_address ?? '—' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+
+        <!-- LEFT -->
+        <div class="xl:col-span-3 space-y-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-6">
+                <h3 class="text-sm font-semibold uppercase tracking-wide mb-4">Items</h3>
+
+                <div class="overflow-x-auto rounded-lg border">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
+                            <tr>
+                                <th class="px-4 py-2 text-left">Product</th>
+                                <th class="px-4 py-2 text-right">Qty</th>
+                                <th class="px-4 py-2 text-right">Price</th>
+                                <th class="px-4 py-2 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            @foreach ($order->items as $item)
+                                <tr>
+                                    <td class="px-4 py-2">{{ $item->product_name }}</td>
+                                    <td class="px-4 py-2 text-right">{{ $item->quantity }}</td>
+                                    <td class="px-4 py-2 text-right">{{ number_format($item->price, 2) }}</td>
+                                    <td class="px-4 py-2 text-right font-semibold">{{ number_format($item->total, 2) }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 text-right text-lg font-bold">
+                    Grand Total: ₹{{ number_format($order->grand_total, 2) }}
+                </div>
+            </div>
+
+            @if ($shipment)
+                <!-- Shipment Details -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                            Shipment Details
+                        </h3>
+
+                        <button id="editShipmentBtn"
+                            class="text-[11px] px-2 py-0.5 rounded-md border text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            Edit
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-[12px]">
+
+                        <div>
+                            <span class="block text-gray-400">Shipment ID</span>
+                            <span class="font-medium">#{{ $shipment->id }}</span>
+                        </div>
+
+                        <div>
+                            <span class="block text-gray-400">Order ID</span>
+                            <span class="font-medium">#{{ $shipment->order_id }}</span>
+                        </div>
+
+                        <div>
+                            <span class="block text-gray-400">Status</span>
+                            <span
+                                class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold
+                    {{ $shipment->status === 'delivered'
+                        ? 'bg-green-100 text-green-700'
+                        : ($shipment->status === 'shipped'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-700') }}">
+                                {{ ucfirst($shipment->status) }}
+                            </span>
+                        </div>
+
+                        <div>
+                            <span class="block text-gray-400">Carrier</span>
+                            <span class="font-medium">{{ $shipment->carrier ?? '—' }}</span>
+                        </div>
+
+                        <div>
+                            <span class="block text-gray-400">Tracking No.</span>
+                            <span class="font-mono">{{ $shipment->tracking_number ?? '—' }}</span>
+                        </div>
+
+                        <div>
+                            <span class="block text-gray-400">Shipped At</span>
+                            <span>{{ $shipment->shipped_at?->format('d M Y') ?? '—' }}</span>
+                        </div>
+
+                        <div>
+                            <span class="block text-gray-400">Delivered At</span>
+                            <span>{{ $shipment->delivered_at?->format('d M Y') ?? '—' }}</span>
+                        </div>
+
+                        <div>
+                            <span class="block text-gray-400">Created</span>
+                            <span>{{ $shipment->created_at?->format('d M Y H:i') ?? '—' }}</span>
+                        </div>
+
+                        <div>
+                            <span class="block text-gray-400">Last Updated</span>
+                            <span>{{ $shipment->updated_at?->format('d M Y H:i') ?? '—' }}</span>
+                        </div>
+
+                        <div class="col-span-2 sm:col-span-3 pt-1">
+                            <span class="block text-gray-400">Address Snapshot</span>
+                            <div class="leading-snug text-gray-700 dark:text-gray-300">
+                                {{ $shipment->address_snapshot ?? '—' }}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            @endif
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="space-y-6">
+            @php
+                $flow = [
+                    'draft' => ['confirmed', 'cancelled'],
+                    'confirmed' => ['processing', 'cancelled'],
+                    'processing' => ['shipped', 'cancelled'],
+                    'shipped' => ['delivered'],
+                    'delivered' => [],
+                    'cancelled' => [],
+                ];
+                $allowed = $flow[$order->status] ?? [];
+            @endphp
+
+            <!-- Status -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-6">
+                <h3 class="text-sm font-semibold uppercase tracking-wide mb-4">Order Status</h3>
+
+                @if (count($allowed))
+                    <form id="statusForm" action="{{ route('orders.status.update', $order) }}" method="POST"
+                        class="space-y-3">
+                        @csrf
+                        @method('PUT')
+
+                        <select id="statusSelect" name="status"
+                            class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                            @foreach ($allowed as $s)
+                                <option value="{{ $s }}">{{ ucfirst($s) }}</option>
+                            @endforeach
+                        </select>
+
+                        <x-button type="primary" class="w-full">Update Status</x-button>
+                    </form>
+                @else
+                    <div class="text-sm text-gray-500 text-center py-2">
+                        No further status changes allowed.
+                    </div>
+                @endif
+            </div>
+
+            <!-- Invoice -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-6">
+                <h3 class="text-sm font-semibold uppercase tracking-wide mb-4">Invoice</h3>
+
+                @if ($order->invoice)
+                    <div class="space-y-2 text-sm mb-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Invoice No</span>
+                            <span class="font-medium">{{ $order->invoice->invoice_number }}</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Amount</span>
+                            <span class="font-medium">₹{{ number_format($order->invoice->amount, 2) }}</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Generated At</span>
+                            <span class="font-medium">
+                                {{ $order->invoice->created_at?->format('d M Y H:i') }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="{{ route('orders.invoice.download', $order) }}"
+                            class="px-3 py-2 text-xs text-center rounded-md border hover:bg-gray-100 dark:hover:bg-gray-700">
+                            Download
+                        </a>
+
+                        <a href="{{ route('orders.invoice.print', $order) }}" target="_blank"
+                            class="px-3 py-2 text-xs text-center rounded-md border hover:bg-gray-100 dark:hover:bg-gray-700">
+                            Print
+                        </a>
+                    </div>
+                @else
+                    <form action="{{ route('orders.invoice.store', $order) }}" method="POST">
+                        @csrf
+                        <x-button type="primary" class="w-full">Generate Invoice</x-button>
+                    </form>
+                @endif
+            </div>
+
+
+            <!-- Payment -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-6">
+                <h3 class="text-sm font-semibold uppercase tracking-wide mb-4">Add Payment</h3>
+
+                <form action="{{ route('orders.payments.store', $order) }}" method="POST"
+                    class="grid grid-cols-1 gap-3">
+                    @csrf
+                    <input name="method" placeholder="Method"
+                        class="rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                    <input name="amount" placeholder="Amount"
+                        class="rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                    <input type="date" name="paid_at"
+                        class="rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                    <x-button type="primary" class="w-full">Add Payment</x-button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shipment Modal -->
+    <div id="shipmentModal" class="fixed inset-0 z-50 hidden bg-black/50 flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6">
+            <h3 class="text-sm font-semibold uppercase tracking-wide mb-4">Shipment</h3>
+
+            <form action="{{ route('orders.shipments.store', $order) }}" method="POST" class="space-y-3">
+                @csrf
+
+                <input name="carrier" placeholder="Carrier" value="{{ $shipment->carrier ?? '' }}"
+                    class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+
+                <input name="tracking_number" placeholder="Tracking Number"
+                    value="{{ $shipment->tracking_number ?? '' }}"
+                    class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+
+                <input type="date" name="shipped_at"
+                    value="{{ $shipment?->shipped_at?->format('Y-m-d') ?? now()->format('Y-m-d') }}"
+                    class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" id="closeShipment"
+                        class="px-4 py-2 text-sm rounded-md border">Cancel</button>
+                    <x-button type="primary">Save</x-button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const statusForm = document.getElementById('statusForm');
+        const statusSelect = document.getElementById('statusSelect');
+        const modal = document.getElementById('shipmentModal');
+        const closeBtn = document.getElementById('closeShipment');
+        const editBtn = document.getElementById('editShipmentBtn');
+
+        if (statusForm && statusSelect) {
+            statusForm.addEventListener('submit', function(e) {
+                if (statusSelect.value === 'shipped') {
+                    e.preventDefault();
+                    modal.classList.remove('hidden');
+                }
+            });
+        }
+
+        if (editBtn) {
+            editBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+        }
+    </script>
+
+</x-layouts.app>

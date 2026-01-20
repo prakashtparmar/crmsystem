@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name') }}</title>
+
     <script>
         window.setAppearance = function(appearance) {
             let setDark = () => document.documentElement.classList.add('dark')
@@ -35,11 +36,18 @@
     </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- DataTables common CSS --}}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+
+    {{-- Page specific styles --}}
+    @stack('styles')
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 antialiased" x-data="{
     sidebarOpen: localStorage.getItem('sidebarOpen') === null ? window.innerWidth >= 1024 : localStorage.getItem('sidebarOpen') === 'true',
-    toggleSidebar() { 
+    toggleSidebar() {
         this.sidebarOpen = !this.sidebarOpen;
         localStorage.setItem('sidebarOpen', this.sidebarOpen);
     },
@@ -111,6 +119,19 @@
             </main>
         </div>
     </div>
+
+    {{-- jQuery + DataTables common JS --}}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    {{-- Reusable DataTable helper --}}
+    <script src="{{ asset('js/datatable-helper.js') }}"></script>
+
+    {{-- Page specific scripts --}}
+    @stack('scripts')
 </body>
 
-</html>
+</html>  any correction in this file
