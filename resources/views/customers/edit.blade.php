@@ -93,44 +93,98 @@
                     </section>
 
                     <!-- Agriculture + Finance -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <section class="space-y-2">
-                            <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Agriculture</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <x-forms.input label="Land Area" name="land_area" value="{{ old('land_area', $customer->land_area) }}" />
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Agriculture -->
+    <section class="space-y-2">
+        <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Agriculture</h3>
 
-                                <div class="flex flex-col">
-                                    <label class="block text-sm font-medium mb-1">Land Unit</label>
-                                    <select name="land_unit" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                                        @foreach (['acre','hectare','bigha'] as $u)
-                                            <option value="{{ $u }}" @selected(old('land_unit', $customer->land_unit) == $u)>{{ ucfirst($u) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="w-full">
+                <x-forms.input
+                    label="Land Area"
+                    name="land_area"
+                    value="{{ old('land_area', $customer->land_area) }}"
+                />
+            </div>
 
-                                <x-forms.input label="Primary Crops" name="primary_crops" value="{{ old('primary_crops', $customer->primary_crops) }}" />
-                                <x-forms.input label="Secondary Crops" name="secondary_crops" value="{{ old('secondary_crops', $customer->secondary_crops) }}" />
+            <div class="flex flex-col w-full">
+                <label class="block text-sm font-medium mb-1">Land Unit</label>
+                <select
+                    name="land_unit"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900"
+                >
+                    @foreach (['acre','hectare','bigha'] as $u)
+                        <option value="{{ $u }}" @selected(old('land_unit', $customer->land_unit) == $u)>
+                            {{ ucfirst($u) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-                                <div class="flex flex-col">
-                                    <label class="block text-sm font-medium mb-1">Irrigation Type</label>
-                                    <select name="irrigation_type" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                                        @foreach (['rainfed','canal','drip','sprinkler','borewell'] as $i)
-                                            <option value="{{ $i }}" @selected(old('irrigation_type', $customer->irrigation_type) == $i)>{{ ucfirst($i) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                        </section>
+            <div class="w-full">
+                <x-forms.input
+                    label="Primary Crops"
+                    name="primary_crops"
+                    value="{{ old('primary_crops', $customer->primary_crops) }}"
+                />
+            </div>
 
-                        <section class="space-y-2">
-                            <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Financial</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <x-forms.input label="Credit Limit" name="credit_limit" value="{{ old('credit_limit', $customer->credit_limit) }}" />
-                                <x-forms.input label="Outstanding Balance" name="outstanding_balance" value="{{ old('outstanding_balance', $customer->outstanding_balance) }}" />
-                                <x-forms.input label="Credit Valid Till" name="credit_valid_till" type="date" value="{{ old('credit_valid_till', $customer->credit_valid_till) }}" />
-                            </div>
-                        </section>
-                    </div>
+            <div class="w-full">
+                <x-forms.input
+                    label="Secondary Crops"
+                    name="secondary_crops"
+                    value="{{ old('secondary_crops', $customer->secondary_crops) }}"
+                />
+            </div>
+
+            <div class="flex flex-col w-full">
+                <label class="block text-sm font-medium mb-1">Irrigation Type</label>
+                <select
+                    name="irrigation_type"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900"
+                >
+                    @foreach (['rainfed','canal','drip','sprinkler','borewell'] as $i)
+                        <option value="{{ $i }}" @selected(old('irrigation_type', $customer->irrigation_type) == $i)>
+                            {{ ucfirst($i) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Financial -->
+    <section class="space-y-2">
+        <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Financial</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="w-full">
+                <x-forms.input
+                    label="Credit Limit"
+                    name="credit_limit"
+                    value="{{ old('credit_limit', $customer->credit_limit) }}"
+                />
+            </div>
+
+            <div class="w-full">
+                <x-forms.input
+                    label="Outstanding Balance"
+                    name="outstanding_balance"
+                    value="{{ old('outstanding_balance', $customer->outstanding_balance) }}"
+                />
+            </div>
+
+            <div class="w-full">
+                <x-forms.input
+                    label="Credit Valid Till"
+                    name="credit_valid_till"
+                    type="date"
+                    value="{{ old('credit_valid_till', $customer->credit_valid_till) }}"
+                />
+            </div>
+        </div>
+    </section>
+</div>
 
                     <!-- Status -->
                     <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
