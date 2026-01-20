@@ -41,8 +41,9 @@ use App\Http\Controllers\CheckoutController;
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+    return redirect()->route('login');
+});
+
 
 /*
 |--------------------------------------------------------------------------
