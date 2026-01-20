@@ -199,26 +199,42 @@
                     </section>
 
                     <!-- Optional Business Details -->
-                    <section class="space-y-2">
-                        <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Optional Business
-                            Details</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <x-forms.input label="Shop Name" name="company_name"
-                                value="{{ old('company_name') }}" />
-                            <x-forms.input label="GST Number" name="gst_number" value="{{ old('gst_number') }}" />
-                            <x-forms.input label="PAN Number" name="pan_number" value="{{ old('pan_number') }}" />
-                        </div>
-                    </section>
+<section class="space-y-1.5">
+    <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
+        Optional Business Details
+    </h3>
 
-                    <!-- Optional Location -->
-                    <section class="space-y-2">
-                        <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Optional Location
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <x-forms.input label="Latitude" name="latitude" />
-                            <x-forms.input label="Longitude" name="longitude" />
-                        </div>
-                    </section>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="w-full">
+            <x-forms.input label="Shop Name" name="company_name" value="{{ old('company_name') }}" />
+        </div>
+
+        <div class="w-full">
+            <x-forms.input label="GST Number" name="gst_number" value="{{ old('gst_number') }}" />
+        </div>
+
+        <div class="w-full">
+            <x-forms.input label="PAN Number" name="pan_number" value="{{ old('pan_number') }}" />
+        </div>
+    </div>
+</section>
+
+<!-- Optional Location -->
+<section class="space-y-1.5">
+    <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
+        Optional Location
+    </h3>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="w-full">
+            <x-forms.input label="Latitude" name="latitude" />
+        </div>
+
+        <div class="w-full">
+            <x-forms.input label="Longitude" name="longitude" />
+        </div>
+    </div>
+</section>
 
 
                     <!-- Actions -->
