@@ -40,7 +40,7 @@
 
                         <div class="grid grid-cols-1 gap-4">
 
-                            <!-- Avatar Group -->
+                            <!-- Avatar -->
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full overflow-hidden border dark:border-gray-700 bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
                                     <img id="avatarPreview" src="{{ asset('images/avatar-placeholder.png') }}"
@@ -95,29 +95,49 @@
                         </div>
                     </div>
 
-                    <!-- Roles -->
-                    <div class="p-5">
-                        <div class="flex items-center justify-between mb-3">
-                            <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                                Roles & Permissions
-                            </h2>
+      <!-- Roles -->
+<div class="p-5">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+            Roles & Permissions
+        </h2>
 
-                            <label class="flex items-center gap-2 text-xs cursor-pointer">
-                                <input type="checkbox" id="selectAllRoles" class="rounded">
-                                <span>Select All</span>
-                            </label>
-                        </div>
+        <label class="flex items-center gap-2 text-xs cursor-pointer text-gray-600 dark:text-gray-300">
+            <input type="checkbox" id="selectAllRoles" class="rounded">
+            <span>Select All</span>
+        </label>
+    </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                            @foreach ($roles as $role)
-                                <label class="flex items-center gap-2 px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                                    <input type="checkbox" name="roles[]" value="{{ $role->id }}"
-                                           @checked(in_array($role->id, old('roles', [])))>
-                                    <span class="text-xs capitalize">{{ $role->name }}</span>
-                                </label>
-                            @endforeach
-                        </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        @foreach ($roles as $role)
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-900/40 hover:shadow-sm transition">
+                <label class="flex items-center gap-2 mb-2 cursor-pointer">
+                    <input type="checkbox" name="roles[]" value="{{ $role->id }}"
+                           @checked(in_array($role->id, old('roles', [])))>
+                    <span class="text-sm font-semibold capitalize text-gray-800 dark:text-gray-100">
+                        {{ $role->name }}
+                    </span>
+                </label>
+
+                @if ($role->permissions->count())
+                    <div class="flex flex-wrap gap-1 pl-5">
+                        @foreach ($role->permissions as $perm)
+                            <span class="px-2 py-0.5 text-[10px] rounded-full bg-indigo-100 text-indigo-700
+                                         dark:bg-indigo-900/40 dark:text-indigo-300">
+                                {{ $perm->name }}
+                            </span>
+                        @endforeach
                     </div>
+                @else
+                    <div class="pl-5 text-[10px] text-gray-400">
+                        No permissions attached
+                    </div>
+                @endif
+            </div>
+        @endforeach
+    </div>
+</div>
+
 
                     <!-- Actions -->
                     <div class="flex justify-end gap-2 px-5 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 rounded-b-xl">
