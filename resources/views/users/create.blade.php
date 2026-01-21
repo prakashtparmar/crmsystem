@@ -38,10 +38,10 @@
                         {{ __('Profile Information') }}
                     </h2>
 
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                        <!-- Avatar -->
-                        <div class="md:col-span-3 flex flex-col items-center gap-2">
-                            <div class="w-16 h-16 rounded-full overflow-hidden border dark:border-gray-700 bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <!-- Avatar Row -->
+                        <div class="md:col-span-3 flex items-center gap-4">
+<div class="w-8 h-8 rounded-full overflow-hidden border dark:border-gray-700 bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
                                 <img id="avatarPreview"
                                      src="{{ asset('images/avatar-placeholder.png') }}"
                                      class="w-full h-full object-cover hidden">
@@ -49,40 +49,37 @@
                             </div>
 
                             <input type="file" name="avatar" id="avatarInput" accept="image/*"
-                                   class="w-full text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                   class="text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
                         </div>
 
-                        <!-- Fields -->
-                        <div class="md:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <x-forms.input label="Username" name="username" value="{{ old('username') }}" />
-                            <x-forms.input label="Email" name="email" type="email" value="{{ old('email') }}" required />
-                            <x-forms.input label="Phone" name="phone" value="{{ old('phone') }}" />
+                        <x-forms.input label="Username" name="username" value="{{ old('username') }}" />
+                        <x-forms.input label="Email" name="email" type="email" value="{{ old('email') }}" required />
+                        <x-forms.input label="Phone" name="phone" value="{{ old('phone') }}" />
 
-                            <x-forms.input label="Full Name" name="name" value="{{ old('name') }}" required />
+                        <x-forms.input label="Full Name" name="name" value="{{ old('name') }}" required />
 
-                            <div class="flex flex-col">
-                                <label class="block text-sm font-medium mb-1">Status</label>
-                                <select name="status"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                                    <option value="active" @selected(old('status','active') === 'active')>Active</option>
-                                    <option value="inactive" @selected(old('status') === 'inactive')>Inactive</option>
-                                    <option value="blocked" @selected(old('status') === 'blocked')>Blocked</option>
-                                </select>
-                            </div>
-
-                            <div class="flex flex-col">
-                                <label class="block text-sm font-medium mb-1">Gender</label>
-                                <select name="gender"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                                    <option value="">-- Select --</option>
-                                    <option value="male" @selected(old('gender') === 'male')>Male</option>
-                                    <option value="female" @selected(old('gender') === 'female')>Female</option>
-                                    <option value="other" @selected(old('gender') === 'other')>Other</option>
-                                </select>
-                            </div>
-
-                            <x-forms.input label="Date of Birth" name="dob" type="date" value="{{ old('dob') }}" />
+                        <div class="flex flex-col">
+                            <label class="block text-sm font-medium mb-1">Status</label>
+                            <select name="status"
+                                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                <option value="active" @selected(old('status','active') === 'active')>Active</option>
+                                <option value="inactive" @selected(old('status') === 'inactive')>Inactive</option>
+                                <option value="blocked" @selected(old('status') === 'blocked')>Blocked</option>
+                            </select>
                         </div>
+
+                        <div class="flex flex-col">
+                            <label class="block text-sm font-medium mb-1">Gender</label>
+                            <select name="gender"
+                                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                <option value="">-- Select --</option>
+                                <option value="male" @selected(old('gender') === 'male')>Male</option>
+                                <option value="female" @selected(old('gender') === 'female')>Female</option>
+                                <option value="other" @selected(old('gender') === 'other')>Other</option>
+                            </select>
+                        </div>
+
+                        <x-forms.input label="Date of Birth" name="dob" type="date" value="{{ old('dob') }}" />
                     </div>
                 </div>
 
