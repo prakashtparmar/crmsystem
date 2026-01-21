@@ -56,16 +56,16 @@
                             <!-- Fields -->
                             <div class="lg:col-span-3 space-y-4">
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <x-forms.input label="Username" name="username" value="{{ old('username') }}" />
-                                    <x-forms.input label="Email Address" name="email" type="email"
+                                    <x-forms.input class="w-full" label="Username" name="username" value="{{ old('username') }}" />
+                                    <x-forms.input class="w-full" label="Email Address" name="email" type="email"
                                                    value="{{ old('email') }}" required />
-                                    <x-forms.input label="Phone" name="phone" value="{{ old('phone') }}" />
+                                    <x-forms.input class="w-full" label="Phone" name="phone" value="{{ old('phone') }}" />
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <x-forms.input label="Full Name" name="name" value="{{ old('name') }}" required />
+                                    <x-forms.input class="w-full" label="Full Name" name="name" value="{{ old('name') }}" required />
 
-                                    <div class="flex flex-col">
+                                    <div class="flex flex-col w-full">
                                         <label class="block text-sm font-medium mb-1">Status</label>
                                         <select name="status"
                                                 class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
@@ -75,7 +75,7 @@
                                         </select>
                                     </div>
 
-                                    <div class="flex flex-col">
+                                    <div class="flex flex-col w-full">
                                         <label class="block text-sm font-medium mb-1">Gender</label>
                                         <select name="gender"
                                                 class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
@@ -88,7 +88,7 @@
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <x-forms.input label="Date of Birth" name="dob" type="date"
+                                    <x-forms.input class="w-full" label="Date of Birth" name="dob" type="date"
                                                    value="{{ old('dob') }}" />
                                 </div>
                             </div>
@@ -98,8 +98,8 @@
                         <section class="space-y-2 pt-4 border-t dark:border-gray-700">
                             <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Security</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <x-forms.input label="Password" name="password" type="password" required />
-                                <x-forms.input label="Confirm Password" name="password_confirmation" type="password" required />
+                                <x-forms.input class="w-full" label="Password" name="password" type="password" required />
+                                <x-forms.input class="w-full" label="Confirm Password" name="password_confirmation" type="password" required />
                             </div>
                         </section>
 
