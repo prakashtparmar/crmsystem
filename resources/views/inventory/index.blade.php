@@ -43,7 +43,7 @@
                         <th class="px-3 py-2">Product</th>
                         <th class="px-3 py-2">SKU</th>
                         <th class="px-3 py-2">Warehouse</th>
-                        <th class="px-3 py-2 text-right">Physical Qty</th>
+                        <th class="px-3 py-2 text-right">Physical</th>
                         <th class="px-3 py-2 text-right">Reserved</th>
                         <th class="px-3 py-2 text-right">Available</th>
                         <th class="px-3 py-2">Updated At</th>

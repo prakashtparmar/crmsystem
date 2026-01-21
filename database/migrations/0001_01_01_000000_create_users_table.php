@@ -13,6 +13,7 @@ return new class extends Migration
 
             // Identity
             $table->string('name');
+            $table->string('username')->nullable()->unique();
             $table->string('email')->unique();
             $table->string('phone', 20)->nullable()->unique();
 
@@ -23,9 +24,12 @@ return new class extends Migration
             // Authentication
             $table->string('password');
             $table->rememberToken();
+            $table->timestamp('password_changed_at')->nullable();
 
             // Account State
             $table->enum('status', ['active', 'inactive', 'blocked'])->default('active');
+            $table->unsignedInteger('failed_login_attempts')->default(0);
+            $table->timestamp('locked_until')->nullable();
 
             // Profile
             $table->string('avatar')->nullable();
@@ -35,6 +39,10 @@ return new class extends Migration
             // Security & Tracking
             $table->timestamp('last_login_at')->nullable();
             $table->string('last_login_ip', 45)->nullable();
+
+            // Audit
+            $table->unsignedBigInteger('created_by')->nullable()->index();
+            $table->unsignedBigInteger('updated_by')->nullable()->index();
 
             // Flexible future data
             $table->json('meta')->nullable();

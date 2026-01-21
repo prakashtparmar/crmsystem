@@ -185,6 +185,13 @@ Route::get('orders/{order}/invoice/print', [InvoiceController::class, 'print'])
     | System & Access Control
     |--------------------------------------------------------------------------
     */
+
+    Route::post('users/bulk-action', [UserController::class, 'bulkAction'])
+    ->name('users.bulkAction');
+
+    Route::post('users/{id}/restore', [UserController::class, 'restore'])
+    ->name('users.restore');
+
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class);
 });

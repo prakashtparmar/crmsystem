@@ -19,7 +19,9 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        // Identity
         'name',
+        'username',
         'email',
         'phone',
         'password',
@@ -35,6 +37,13 @@ class User extends Authenticatable
         // Security & tracking
         'last_login_at',
         'last_login_ip',
+        'password_changed_at',
+        'failed_login_attempts',
+        'locked_until',
+
+        // Audit
+        'created_by',
+        'updated_by',
 
         // Flexible data
         'meta',
@@ -54,12 +63,14 @@ class User extends Authenticatable
      * The attributes that should be cast.
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'phone_verified_at' => 'datetime',
-        'last_login_at'     => 'datetime',
-        'dob'               => 'date',
-        'meta'              => 'array',
-        'password'          => 'hashed',
+        'email_verified_at'      => 'datetime',
+        'phone_verified_at'      => 'datetime',
+        'last_login_at'          => 'datetime',
+        'password_changed_at'    => 'datetime',
+        'locked_until'           => 'datetime',
+        'dob'                    => 'date',
+        'meta'                   => 'array',
+        'password'               => 'hashed',
     ];
 
     /**
@@ -79,6 +90,22 @@ class User extends Authenticatable
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    /**
+     * Helper: Check if user is locked
+     */
+    public function isLocked(): bool
+    {
+        return $this->locked_until !== null && now()->lessThan($this->locked_until);
+    }
+
+    /**
+     * Helper: Can user log in?
+     */
+    public function canLogin(): bool
+    {
+        return $this->isActive() && ! $this->isLocked();
     }
 
     /**

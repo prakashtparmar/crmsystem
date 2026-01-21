@@ -173,13 +173,6 @@ class OrderController extends Controller
                     'total'        => $line + $lineTax,
                 ]);
 
-                $inventory->reserveFromAnyWarehouse(
-                    productId: $product->id,
-                    qty: $qty,
-                    referenceType: 'order',
-                    referenceId: $order->id
-                );
-
                 $subTotal += $line;
                 $taxTotal += $lineTax;
             }

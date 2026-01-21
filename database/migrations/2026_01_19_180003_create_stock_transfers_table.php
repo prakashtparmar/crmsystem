@@ -5,7 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void {
+    public function up(): void
+    {
         Schema::create('stock_transfers', function (Blueprint $table) {
             $table->id();
 
@@ -16,11 +17,20 @@ return new class extends Migration {
             $table->decimal('quantity', 14, 3);
             $table->enum('status', ['pending', 'in_transit', 'completed', 'cancelled'])->default('pending');
 
+            $table->string('transfer_code')->unique();
+            $table->text('remarks')->nullable();
+            $table->timestamp('completed_at')->nullable();
+
+            $table->index(['product_id']);
+            $table->index(['from_warehouse_id']);
+            $table->index(['to_warehouse_id']);
+
             $table->timestamps();
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::dropIfExists('stock_transfers');
     }
 };

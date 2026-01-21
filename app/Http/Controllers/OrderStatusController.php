@@ -53,13 +53,26 @@ class OrderStatusController extends Controller
             /**
              * BUSINESS RULES
              *
-             * draft      -> confirmed : keep reserved
-             * confirmed  -> shipped   : convert reserve to out
-             * any        -> cancelled : release reserved
+             * draft      -> confirmed : RESERVE stock
+             * confirmed  -> shipped   : convert reserve to OUT
+             * any        -> cancelled : RELEASE reserved (only if not shipped)
              * shipped    -> delivered : close shipment
              */
 
-            if ($to === 'cancelled' && $from !== 'cancelled') {
+            // draft -> confirmed : reserve stock
+            if ($to === 'confirmed' && $from === 'draft') {
+                foreach ($order->items as $item) {
+                    $inventory->reserveFromAnyWarehouse(
+                        productId: $item->product_id,
+                        qty: $item->quantity,
+                        referenceType: 'order',
+                        referenceId: $order->id
+                    );
+                }
+            }
+
+            // Cancel: release only if not already shipped
+            if ($to === 'cancelled' && $from !== 'cancelled' && $from !== 'shipped') {
                 foreach ($order->items as $item) {
                     $inventory->releaseFromAnyWarehouse(
                         productId: $item->product_id,
@@ -70,6 +83,7 @@ class OrderStatusController extends Controller
                 }
             }
 
+            // Ship: convert reserved → out (physical stock decreases)
             if ($to === 'shipped' && $from !== 'shipped') {
                 foreach ($order->items as $item) {
                     $inventory->shipFromReserved(
@@ -81,7 +95,7 @@ class OrderStatusController extends Controller
                 }
             }
 
-            // 🔹 NEW: When delivered, update shipment
+            // When delivered, update shipment
             if ($to === 'delivered' && $from !== 'delivered') {
                 $shipment = $order->shipments()
                     ->whereIn('status', ['pending', 'shipped'])
@@ -98,12 +112,14 @@ class OrderStatusController extends Controller
                 }
             }
 
+            // Update order
             $order->update([
                 'status'       => $to,
                 'updated_by'   => auth()->id(),
-                'completed_at'=> $to === 'delivered' ? now() : $order->completed_at,
+                'completed_at' => $to === 'delivered' ? now() : $order->completed_at,
             ]);
 
+            // Log status change
             OrderStatusLog::create([
                 'order_id'    => $order->id,
                 'from_status' => $from,
