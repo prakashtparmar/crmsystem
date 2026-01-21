@@ -30,12 +30,27 @@
 
                         <form action="{{ route('products.update', $product) }}"
                               method="POST"
-                              class="max-w-2xl space-y-4">
+                              enctype="multipart/form-data"
+                              class="max-w-2xl space-y-6">
 
+                            @csrf
                             @method('PUT')
 
-                            {{-- This file already contains @csrf and all fields --}}
+                            {{-- Product Form Fields --}}
                             @include('products.form')
+
+                            <!-- Actions -->
+                            <div class="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <a href="{{ route('products.index') }}"
+                                   class="px-3 py-1.5 rounded-md border text-sm text-gray-700 dark:text-gray-300
+                                          hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    {{ __('Cancel') }}
+                                </a>
+
+                                <x-button type="primary" class="px-4 py-1.5 text-sm">
+                                    {{ __('Update Product') }}
+                                </x-button>
+                            </div>
 
                         </form>
 

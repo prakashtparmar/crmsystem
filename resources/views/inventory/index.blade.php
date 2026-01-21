@@ -12,25 +12,30 @@
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ __('Inventory Overview') }}</h1>
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
+                {{ __('Inventory Overview') }}
+            </h1>
             <p class="text-gray-600 dark:text-gray-400 mt-1">
                 {{ __('Track product stock across warehouses') }}
             </p>
         </div>
 
-        <!-- ACTION BUTTONS -->
-        <div class="flex gap-2">
-    <a href="{{ route('inventory.in.create') }}"
-       class="px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700">
-        + Stock In / Adjust
-    </a>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('inventory.in.create') }}"
+                class="px-3 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700">
+                + {{ __('Stock In / Adjust') }}
+            </a>
 
-    <a href="{{ route('inventory.transfer.create') }}"
-       class="px-4 py-2 rounded-md bg-green-600 text-white text-sm hover:bg-green-700">
-        ⇄ Transfer Stock
-    </a>
-</div>
-
+            <a href="{{ route('inventory.transfer.create') }}"
+                class="px-3 py-1.5 rounded-md
+                       border border-gray-300
+                       bg-white text-gray-800 text-sm
+                       hover:bg-gray-100
+                       dark:bg-gray-900 dark:text-gray-100
+                       dark:border-gray-700 dark:hover:bg-gray-800">
+                ⇄ {{ __('Transfer Stock') }}
+            </a>
+        </div>
     </div>
 
     <div class="p-6">
@@ -42,6 +47,10 @@
                         <th class="px-3 py-2">ID</th>
                         <th class="px-3 py-2">Product</th>
                         <th class="px-3 py-2">SKU</th>
+                        <th class="px-3 py-2">Category</th>
+                        <th class="px-3 py-2">Brand</th>
+                        <th class="px-3 py-2">Unit</th>
+                        <th class="px-3 py-2 text-right">Price</th>
                         <th class="px-3 py-2">Warehouse</th>
                         <th class="px-3 py-2 text-right">Physical</th>
                         <th class="px-3 py-2 text-right">Reserved</th>
@@ -51,19 +60,37 @@
                 </thead>
 
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    @foreach($stocks as $stock)
+                    @foreach ($stocks as $stock)
                         @php
                             $available = $stock->quantity - $stock->reserved_qty;
+                            $product = $stock->product;
                         @endphp
+
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
                             <td class="px-3 py-2 text-gray-500">{{ $stock->id }}</td>
 
                             <td class="px-3 py-2 font-medium text-gray-800 dark:text-gray-100">
-                                {{ $stock->product->name }}
+                                {{ $product->name }}
                             </td>
 
                             <td class="px-3 py-2 text-gray-500">
-                                {{ $stock->product->sku ?? '—' }}
+                                {{ $product->sku ?? '—' }}
+                            </td>
+
+                            <td class="px-3 py-2 text-gray-500">
+                                {{ $product->category->name ?? '—' }}
+                            </td>
+
+                            <td class="px-3 py-2 text-gray-500">
+                                {{ $product->brand->name ?? '—' }}
+                            </td>
+
+                            <td class="px-3 py-2 text-gray-500">
+                                {{ $product->unit->name ?? '—' }}
+                            </td>
+
+                            <td class="px-3 py-2 text-right text-gray-600">
+                                {{ number_format($product->price ?? 0, 2) }}
                             </td>
 
                             <td class="px-3 py-2">

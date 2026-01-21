@@ -122,6 +122,10 @@ Route::get('orders/{order}/invoice/print', [InvoiceController::class, 'print'])
         Route::post('/transfer', [InventoryController::class, 'transfer'])->name('transfer.store');
     });
 
+    Route::get('inventory/available', [InventoryController::class, 'available'])
+    ->name('inventory.available');
+
+
     Route::resource('inventory', InventoryController::class);
 
     /*
@@ -193,6 +197,9 @@ Route::get('orders/{order}/invoice/print', [InvoiceController::class, 'print'])
     ->name('users.restore');
 
     Route::resource('users', UserController::class);
+
+    Route::post('roles/bulk-action', [RoleController::class, 'bulkAction'])->name('roles.bulkAction');
+
     Route::resource('roles', RoleController::class);
 });
 

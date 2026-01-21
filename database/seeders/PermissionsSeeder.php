@@ -13,16 +13,45 @@ class PermissionsSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $modules = [
+            // System
             'users',
             'roles',
+
+            // Commerce
+            'customers',
             'orders',
             'products',
-            'categories',
             'inventory',
-            'customers',
-            'reports',
+
+            // Masters
+            'categories',
+            'subcategories',
+            'brands',
+            'units',
+            'crops',
+            'seasons',
+            'product-variants',
+            'product-attributes',
+            'product-images',
+            'product-tags',
+            'batch-lots',
+            'expiries',
+            'certifications',
+
+            // Marketing
             'coupons',
             'campaigns',
+
+            // Reports
+            'reports-sales',
+            'reports-customers',
+            'reports-performance',
+            'reports-conversion',
+
+            // Settings
+            'settings-profile',
+            'settings-password',
+            'settings-appearance',
         ];
 
         $actions = ['view', 'create', 'edit', 'delete'];

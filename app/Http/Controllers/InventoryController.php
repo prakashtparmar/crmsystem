@@ -158,4 +158,25 @@ class InventoryController extends Controller
             ->route('inventory.index')
             ->with('success', 'Stock transferred successfully.');
     }
+
+    public function available(Request $request)
+{
+    $request->validate([
+        'product_id'   => ['required', 'exists:products,id'],
+        'warehouse_id' => ['required', 'exists:warehouses,id'],
+    ]);
+
+    $stock = ProductStock::where('product_id', $request->product_id)
+        ->where('warehouse_id', $request->warehouse_id)
+        ->first();
+
+    $available = $stock
+        ? ($stock->quantity - $stock->reserved_qty)
+        : 0;
+
+    return response()->json([
+        'available' => max(0, $available),
+    ]);
+}
+
 }

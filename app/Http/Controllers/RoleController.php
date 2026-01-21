@@ -13,7 +13,9 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::latest()->paginate(10);
+        // Load permissions for grouping in table
+        $roles = Role::with('permissions')->latest()->get();
+
         return view('roles.index', compact('roles'));
     }
 
@@ -112,5 +114,33 @@ class RoleController extends Controller
         return redirect()
             ->route('roles.index')
             ->with('success', 'Role deleted successfully.');
+    }
+
+    /**
+     * Handle bulk actions from Roles index.
+     */
+    public function bulkAction(Request $request)
+    {
+        $request->validate([
+            'action' => 'required|string',
+            'ids' => 'required|array',
+        ]);
+
+        $roles = Role::whereIn('id', $request->ids)->get();
+
+        if ($request->action === 'delete') {
+            foreach ($roles as $role) {
+                // Skip protected roles
+                if (in_array(strtolower($role->name), ['admin', 'super admin', 'super-admin'])) {
+                    continue;
+                }
+
+                $role->delete();
+            }
+
+            return back()->with('success', 'Selected roles deleted successfully.');
+        }
+
+        return back()->with('error', 'Invalid bulk action.');
     }
 }

@@ -10,10 +10,31 @@ class Product extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'category_id','subcategory_id','brand_id','unit_id','crop_id','season_id',
-        'name','slug','short_description','description',
-        'hsn_code','gst_percent','is_organic',
-        'min_order_qty','max_order_qty','shelf_life_days','is_active'
+        'category_id',
+        'subcategory_id',
+        'brand_id',
+        'unit_id',
+        'crop_id',
+        'season_id',
+
+        'name',
+        'slug',
+        'sku',
+
+        'short_description',
+        'description',
+
+        'price',
+        'cost_price',
+
+        'hsn_code',
+        'gst_percent',
+        'is_organic',
+
+        'min_order_qty',
+        'max_order_qty',
+        'shelf_life_days',
+        'is_active'
     ];
 
     public function category()     { return $this->belongsTo(Category::class); }
@@ -28,9 +49,9 @@ class Product extends Model
     public function images()       { return $this->hasMany(ProductImage::class); }
     public function tags()         { return $this->hasMany(ProductTag::class); }
     public function certifications(){ return $this->hasMany(Certification::class); }
-    public function stocks()
-{
-    return $this->hasMany(ProductStock::class);
-}
 
+    public function stocks()
+    {
+        return $this->hasMany(ProductStock::class);
+    }
 }
