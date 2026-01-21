@@ -38,10 +38,10 @@
                             Profile Information
                         </h2>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 gap-4">
 
                             <!-- Avatar Group -->
-                            <div class="md:col-span-3 flex items-center gap-3">
+                            <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full overflow-hidden border dark:border-gray-700 bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
                                     <img id="avatarPreview" src="{{ asset('images/avatar-placeholder.png') }}"
                                          class="w-full h-full object-cover hidden">
@@ -55,27 +55,11 @@
                                 </div>
                             </div>
 
-                            <!-- Username -->
-                            <div>
-                                <x-forms.input label="Username" name="username" value="{{ old('username') }}" />
-                            </div>
+                            <x-forms.input label="Username" name="username" value="{{ old('username') }}" />
+                            <x-forms.input label="Email Address" name="email" type="email" value="{{ old('email') }}" required />
+                            <x-forms.input label="Phone" name="phone" value="{{ old('phone') }}" />
+                            <x-forms.input label="Full Name" name="name" value="{{ old('name') }}" required />
 
-                            <!-- Email -->
-                            <div>
-                                <x-forms.input label="Email Address" name="email" type="email" value="{{ old('email') }}" required />
-                            </div>
-
-                            <!-- Phone -->
-                            <div>
-                                <x-forms.input label="Phone" name="phone" value="{{ old('phone') }}" />
-                            </div>
-
-                            <!-- Full Name -->
-                            <div>
-                                <x-forms.input label="Full Name" name="name" value="{{ old('name') }}" required />
-                            </div>
-
-                            <!-- Status -->
                             <div class="flex flex-col">
                                 <label class="block text-sm font-medium mb-1">Status</label>
                                 <select name="status" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
@@ -85,7 +69,6 @@
                                 </select>
                             </div>
 
-                            <!-- Gender -->
                             <div class="flex flex-col">
                                 <label class="block text-sm font-medium mb-1">Gender</label>
                                 <select name="gender" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
@@ -96,10 +79,7 @@
                                 </select>
                             </div>
 
-                            <!-- DOB -->
-                            <div>
-                                <x-forms.input label="Date of Birth" name="dob" type="date" value="{{ old('dob') }}" />
-                            </div>
+                            <x-forms.input label="Date of Birth" name="dob" type="date" value="{{ old('dob') }}" />
                         </div>
                     </div>
 
@@ -109,13 +89,9 @@
                             Security
                         </h2>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
-                            <div>
-                                <x-forms.input label="Password" name="password" type="password" required />
-                            </div>
-                            <div>
-                                <x-forms.input label="Confirm Password" name="password_confirmation" type="password" required />
-                            </div>
+                        <div class="grid grid-cols-1 gap-4 max-w-3xl">
+                            <x-forms.input label="Password" name="password" type="password" required />
+                            <x-forms.input label="Confirm Password" name="password_confirmation" type="password" required />
                         </div>
                     </div>
 
@@ -132,7 +108,7 @@
                             </label>
                         </div>
 
-                        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                             @foreach ($roles as $role)
                                 <label class="flex items-center gap-2 px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/40">
                                     <input type="checkbox" name="roles[]" value="{{ $role->id }}"
