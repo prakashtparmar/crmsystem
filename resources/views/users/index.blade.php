@@ -41,25 +41,34 @@
             @csrf
 
             <!-- Bulk Actions -->
-            <div class="mb-3 flex items-center gap-2">
-                <select name="action" class="rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm">
-                    <option value="">Bulk Action</option>
+      <!-- Bulk Actions -->
+<div class="mb-3 flex items-center gap-2">
+    <select name="action"
+        class="rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm">
+        <option value="">Bulk Action</option>
 
-                    @if ($showTrashed)
-                        <option value="restore">Restore</option>
-                    @else
-                        <option value="activate">Activate</option>
-                        <option value="deactivate">Deactivate</option>
-                        <option value="block">Block</option>
-                        <option value="delete">Delete</option>
-                    @endif
-                </select>
+        @if ($showTrashed)
+            <option value="restore">Restore</option>
+        @else
+            <option value="activate">Activate</option>
+            <option value="deactivate">Deactivate</option>
+            <option value="block">Block</option>
+            <option value="delete">Delete</option>
+        @endif
+    </select>
 
-                <button type="submit" onclick="return confirmBulkAction();"
-                    class="px-3 py-1.5 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700">
-                    Apply
-                </button>
-            </div>
+    <button type="submit"
+        onclick="return confirmBulkAction();"
+        class="px-3 py-1.5 rounded-md
+               border border-gray-300
+               bg-white text-gray-800 text-sm
+               hover:bg-gray-100
+               dark:bg-gray-900 dark:text-gray-100
+               dark:border-gray-700 dark:hover:bg-gray-800">
+        Apply
+    </button>
+</div>
+
 
             <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 overflow-visible">
