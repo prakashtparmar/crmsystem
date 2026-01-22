@@ -19,6 +19,7 @@
         </div>
 
         <!-- Center: Global Customer Search -->
+        @can('customers.view')
         <form action="{{ route('customers.search') }}" method="GET"
               class="flex w-full max-w-md items-center">
             <div class="relative w-full">
@@ -36,11 +37,12 @@
                 Search
             </button>
         </form>
+        @endcan
 
         <!-- Right side: Profile -->
         <div class="flex items-center space-x-4 shrink-0">
             <div x-data="{ open: false }" class="relative">
-                <button @click="open = !open" class="flex items-center focus:outline-none">
+                <button type="button" @click="open = !open" class="flex items-center focus:outline-none">
                     <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg">
                         <span
                             class="flex h-full w-full items-center justify-center rounded-lg bg-gray-200 text-black dark:bg-gray-700 dark:text-white">
@@ -61,6 +63,7 @@
                      class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700"
                      :class="{ 'block': open, 'hidden': !open }">
 
+                    @can('settings-profile.view')
                     <a href="{{ route('settings.profile.edit') }}"
                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                         <div class="flex items-center">
@@ -76,6 +79,7 @@
                     </a>
 
                     <div class="border-t border-gray-200 dark:border-gray-700"></div>
+                    @endcan
 
                     <form method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf

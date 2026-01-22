@@ -18,84 +18,93 @@
             </p>
         </div>
 
-        <a href="{{ route('roles.create') }}">
-            <x-button type="primary">
-                + {{ __('Add Role') }}
-            </x-button>
-        </a>
+        @can('roles.create')
+            <a href="{{ route('roles.create') }}">
+                <x-button type="primary">
+                    + {{ __('Add Role') }}
+                </x-button>
+            </a>
+        @endcan
     </div>
 
     <div class="p-6">
-        <!-- BULK FORM ADDED -->
         <form id="bulkForm" action="{{ route('roles.bulkAction') }}" method="POST">
             @csrf
 
-            <!-- Bulk Actions (same style as Users page) -->
-            <div class="mb-3 flex items-center gap-2">
-                <select name="action"
-                    class="rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm">
-                    <option value="">Bulk Action</option>
-                    <option value="delete">Delete</option>
-                </select>
+            @can('roles.delete')
+                <div class="mb-3 flex items-center gap-2">
+                    <select name="action" class="rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm">
+                        <option value="">Bulk Action</option>
+                        <option value="delete">Delete</option>
+                    </select>
 
-                <button type="submit"
-                    onclick="return confirmBulkAction();"
-                    class="px-3 py-1.5 rounded-md
-                           border border-gray-300
-                           bg-white text-gray-800 text-sm
-                           hover:bg-gray-100
-                           dark:bg-gray-900 dark:text-gray-100
-                           dark:border-gray-700 dark:hover:bg-gray-800">
-                    Apply
-                </button>
-            </div>
+                    <button type="submit" onclick="return confirmBulkAction();"
+                        class="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-gray-800 text-sm
+                               hover:bg-gray-100 dark:bg-gray-900 dark:text-gray-100
+                               dark:border-gray-700 dark:hover:bg-gray-800">
+                        Apply
+                    </button>
+                </div>
+            @endcan
 
             <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 overflow-visible">
                 <table id="rolesTable" class="w-full text-sm">
                     <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
                         <tr>
-                            <th class="px-3 py-2 text-center w-10">
-                                <input type="checkbox" id="selectAll">
-                            </th>
+                            @can('roles.delete')
+                                <th class="px-3 py-2 text-center w-10">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                            @endcan
                             <th class="px-3 py-2">ID</th>
-                            <th class="px-3 py-2">Name</th>
+                            <th class="px-3 py-2">Role</th>
                             <th class="px-3 py-2">Guard</th>
                             <th class="px-3 py-2">Permissions</th>
                             <th class="px-3 py-2">Created</th>
-                            <th class="px-3 py-2 text-right">Action</th>
+                            @canany(['roles.edit', 'roles.delete'])
+                                <th class="px-3 py-2 text-right">Action</th>
+                            @endcanany
                         </tr>
                     </thead>
 
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @foreach ($roles as $role)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 align-top">
-                                <td class="px-3 py-2 text-center">
-                                    <!-- name added for bulk submit -->
-                                    <input type="checkbox" class="row-checkbox" name="ids[]" value="{{ $role->id }}">
-                                </td>
+                            @php
+                                $grouped = $role->permissions->groupBy(fn($p) => explode('.', $p->name)[0]);
+                            @endphp
+
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                                @can('roles.delete')
+                                    <td class="px-3 py-2 text-center">
+                                        <input type="checkbox" class="row-checkbox" name="ids[]"
+                                            value="{{ $role->id }}">
+                                    </td>
+                                @endcan
 
                                 <td class="px-3 py-2 text-gray-500">{{ $role->id }}</td>
 
-                                <td class="px-3 py-2 font-medium text-gray-800 dark:text-gray-100">
-                                    {{ $role->name }}
+                                <td class="px-3 py-2">
+                                    <div class="flex flex-col">
+                                        <span class="font-medium text-blue-600 dark:text-blue-400">
+                                            {{ $role->name }}
+                                        </span>
+                                        <span class="text-xs text-gray-500">
+                                            {{ $role->permissions->count() }} permissions
+                                        </span>
+                                    </div>
                                 </td>
 
                                 <td class="px-3 py-2">
                                     <span
-                                        class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                                        class="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
                                         {{ $role->guard_name }}
                                     </span>
                                 </td>
 
                                 <td class="px-3 py-2">
-                                    @php
-                                        $grouped = $role->permissions->groupBy(function ($permission) {
-                                            return explode('.', $permission->name)[0];
-                                        });
-                                    @endphp
-
-                                    <div class="max-w-[360px] max-h-24 overflow-y-auto overflow-x-hidden pr-1 space-y-1">
+                                    <div
+                                        class="max-w-[360px] max-h-24 overflow-y-auto overflow-x-hidden pr-1 space-y-1">
                                         @forelse($grouped as $group => $items)
                                             <div class="flex items-start gap-1 text-xs">
                                                 <span
@@ -105,11 +114,9 @@
 
                                                 <div class="flex flex-wrap gap-1">
                                                     @foreach ($items as $permission)
-                                                        @php
-                                                            $action = explode('.', $permission->name)[1] ?? $permission->name;
-                                                        @endphp
+                                                        @php $action = explode('.', $permission->name)[1] ?? $permission->name; @endphp
                                                         <span
-                                                            class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                                                            class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
                                                             {{ $action }}
                                                         </span>
                                                     @endforeach
@@ -125,10 +132,42 @@
                                     {{ $role->created_at->format('d M Y') }}
                                 </td>
 
-                                <td class="px-3 py-2 text-right relative">
-                                    <!-- keep your existing action menu -->
-                                    ...
-                                </td>
+                                @canany(['roles.edit', 'roles.delete'])
+                                    <td class="px-3 py-2 text-right relative">
+                                        <div class="relative inline-block text-left" x-data="{ open: false }">
+                                            <button type="button" @click="open = !open"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                                                <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor"
+                                                    viewBox="0 0 20 20">
+                                                    <path
+                                                        d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6-2a2 2 0 100 4 2 2 0 000-4zm4-2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                </svg>
+                                            </button>
+
+                                            <div x-cloak x-show="open" @click.away="open = false" x-transition
+                                                class="absolute right-0 mt-2 w-36 rounded-md bg-white dark:bg-gray-800 shadow-xl ring-1 ring-black/10 z-50">
+                                                @can('roles.edit')
+                                                    <a href="{{ route('roles.edit', $role) }}"
+                                                        class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                        Edit
+                                                    </a>
+                                                @endcan
+
+                                                @can('roles.delete')
+                                                    <form action="{{ route('roles.destroy', $role) }}" method="POST"
+                                                        onsubmit="return confirm('Delete this role?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30">
+                                                            Delete
+                                                        </button>
+                                                    </form>
+                                                @endcan
+                                            </div>
+                                        </div>
+                                    </td>
+                                @endcanany
                             </tr>
                         @endforeach
                     </tbody>
@@ -137,20 +176,56 @@
         </form>
     </div>
 
+    @push('styles')
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+    @endpush
+
     @push('scripts')
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                $('#rolesTable').DataTable({
+                const table = $('#rolesTable').DataTable({
+                    dom: 'lBfrtip',
                     pageLength: 10,
+                    lengthMenu: [
+                        [5, 10, 50, 100],
+                        [5, 10, 50, 100]
+                    ],
+                    autoWidth: false,
                     scrollX: true,
+                    responsive: false,
+                    buttons: [{
+                        extend: 'excelHtml5',
+                        text: 'Export Excel'
+                    }],
                 });
 
-                $('#selectAll').on('change', function() {
-                    $('.row-checkbox').prop('checked', this.checked);
-                });
+                const selectAll = document.getElementById('selectAll');
+
+                if (selectAll) {
+                    selectAll.addEventListener('change', function() {
+                        table.rows({
+                                page: 'current'
+                            }).nodes().to$()
+                            .find('.row-checkbox').prop('checked', this.checked);
+                    });
+
+                    $('#rolesTable').on('change', '.row-checkbox', function() {
+                        const all = table.rows({
+                            page: 'current'
+                        }).nodes().to$().find('.row-checkbox').length;
+                        const checked = table.rows({
+                            page: 'current'
+                        }).nodes().to$().find('.row-checkbox:checked').length;
+                        selectAll.checked = (all === checked);
+                    });
+                }
             });
 
             function confirmBulkAction() {

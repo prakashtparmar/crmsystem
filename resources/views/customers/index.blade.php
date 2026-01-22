@@ -18,11 +18,13 @@
             </p>
         </div>
 
+        @can('customers.create')
         <a href="{{ route('customers.create') }}">
             <x-button type="primary">
                 + {{ __('Add Customer') }}
             </x-button>
         </a>
+        @endcan
     </div>
 
     <div class="p-6">
@@ -31,9 +33,11 @@
             <table id="customersTable" class="w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
                     <tr>
+                        @can('customers.delete')
                         <th class="px-3 py-2 text-center w-10">
                             <input type="checkbox" id="selectAll">
                         </th>
+                        @endcan
                         <th class="px-3 py-2">ID</th>
                         <th class="px-3 py-2">Code</th>
                         <th class="px-3 py-2">Name</th>
@@ -63,19 +67,24 @@
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @foreach ($customers as $customer)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                            @can('customers.delete')
                             <td class="px-3 py-2 text-center">
                                 <input type="checkbox" class="row-checkbox" value="{{ $customer->id }}">
                             </td>
+                            @endcan
 
                             <td class="px-3 py-2 text-gray-500">{{ $customer->id }}</td>
                             <td class="px-3 py-2 text-gray-500">{{ $customer->customer_code }}</td>
 
-                            <!-- NAME AS HYPERLINK -->
                             <td class="px-3 py-2 font-medium">
+                                @can('customers.view')
                                 <a href="{{ route('customers.show', $customer) }}"
                                    class="text-blue-600 dark:text-blue-400 hover:underline">
                                     {{ $customer->full_name }}
                                 </a>
+                                @else
+                                    {{ $customer->full_name }}
+                                @endcan
                             </td>
 
                             <td class="px-3 py-2">{{ $customer->mobile }}</td>
@@ -126,27 +135,32 @@
 
                             <td class="px-3 py-2 text-right relative">
                                 <div class="relative inline-block text-left" x-data="{ open: false }">
-                                    <button @click="open = !open"
+                                    <button type="button" @click="open = !open"
                                         class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
                                         <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor"
                                             viewBox="0 0 20 20">
-                                            <path
-                                                d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6-2a2 2 0 100 4 2 2 0 000-4zm4-2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6-2a2 2 0 100 4 2 2 0 000-4zm4-2a2 2 0 11-4 0 2 2 0 014 0z" />
                                         </svg>
                                     </button>
 
                                     <div x-cloak x-show="open" @click.away="open = false" x-transition
                                         class="absolute right-0 mt-2 w-36 rounded-md bg-white dark:bg-gray-800 shadow-xl ring-1 ring-black/10 z-50">
+
+                                        @can('customers.view')
                                         <a href="{{ route('customers.show', $customer) }}"
                                             class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
                                             View
                                         </a>
+                                        @endcan
 
+                                        @can('customers.edit')
                                         <a href="{{ route('customers.edit', $customer) }}"
                                             class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
                                             Edit
                                         </a>
+                                        @endcan
 
+                                        @can('customers.delete')
                                         <form action="{{ route('customers.destroy', $customer) }}" method="POST"
                                             onsubmit="return confirm('Delete this customer?');">
                                             @csrf
@@ -156,6 +170,7 @@
                                                 Delete
                                             </button>
                                         </form>
+                                        @endcan
                                     </div>
                                 </div>
                             </td>
