@@ -15,10 +15,10 @@ class DatabaseSeeder extends Seeder
         AdminUserSeeder::class,
         PermissionsSeeder::class,
         RolesSeeder::class,
-        MasterSeeder::class,
-        ProductSeeder::class,
-        ComplianceSeeder::class,
-        CustomerSeeder::class,
+        // MasterSeeder::class,
+        // ProductSeeder::class,
+        // ComplianceSeeder::class,
+        // CustomerSeeder::class,
 
         ]);
     }
