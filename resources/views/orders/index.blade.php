@@ -48,9 +48,10 @@
     @endif
 
     <div class="p-6">
-        <div
-            class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 overflow-visible">
-            <table id="ordersTable" class="w-full text-xs border-collapse">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 overflow-x-auto">
+
+            <table id="ordersTable" class="w-full text-xs">
+
 
                 <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
                     <tr>
@@ -86,12 +87,33 @@
                         <th class="px-3 py-2">Created By</th>
                         <th class="px-3 py-2">Updated By</th>
                         <th class="px-3 py-2">Deleted At</th>
+
+                        <!-- NEW FIELDS -->
+                        <th class="px-3 py-2">Confirmed At</th>
+                        <th class="px-3 py-2">Cancelled At</th>
+
+
+                        <th class="px-3 py-2">Invoice #</th>
+                        <th class="px-3 py-2">Invoice Status</th>
+                        <th class="px-3 py-2">Shipment Status</th>
+                        <th class="px-3 py-2">Carrier</th>
+                        <th class="px-3 py-2">Tracking</th>
+                        <th class="px-3 py-2">Shipped At</th>
+                        <th class="px-3 py-2">Delivered At</th>
+                        <th class="px-3 py-2">Total Paid</th>
+                        <th class="px-3 py-2">Balance</th>
+
                         <th class="px-3 py-2 text-right">Action</th>
                     </tr>
                 </thead>
 
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @foreach ($orders as $order)
+                        @php
+                            $paid = $order->total_paid ?? 0;
+                            $balance = $order->grand_total - $paid;
+                        @endphp
+
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
                             <td class="px-3 py-2 text-center">
                                 <input type="checkbox" class="row-checkbox" value="{{ $order->id }}">
@@ -100,7 +122,6 @@
                             <td class="px-3 py-2 text-gray-500">{{ $order->id }}</td>
                             <td class="px-3 py-2 text-gray-500">{{ $order->uuid }}</td>
 
-                            <!-- Order Code as Link -->
                             <td class="px-3 py-2 text-gray-500">
                                 <a href="{{ route('orders.show', $order) }}" class="text-blue-600 hover:underline">
                                     {{ $order->order_code }}
@@ -158,11 +179,9 @@
                                 {{ $order->customer?->customer_code ?? '—' }}
                             </td>
 
-
                             <td class="px-3 py-2 text-gray-500">
                                 {{ $order->creator?->id ?? '—' }}
                             </td>
-
 
                             <td class="px-3 py-2 max-w-xs whitespace-pre-line text-gray-700 dark:text-gray-300">
                                 {!! nl2br(e($order->billing_address ?? '—')) !!}
@@ -172,7 +191,6 @@
                                 {!! nl2br(e($order->shipping_address ?? '—')) !!}
                             </td>
 
-
                             <td class="px-3 py-2 text-gray-500">
                                 {{ $order->meta ? json_encode($order->meta) : '—' }}
                             </td>
@@ -181,10 +199,34 @@
                                 {{ $order->creator?->name ?? '—' }}
                             </td>
 
-
                             <td class="px-3 py-2 text-gray-500">{{ $order->updated_by ?? '—' }}</td>
+
                             <td class="px-3 py-2 text-gray-500">
                                 {{ $order->deleted_at?->format('d M Y H:i') ?? '—' }}
+                            </td>
+
+                            <!-- NEW FIELDS -->
+                            <td class="px-3 py-2 text-gray-500">
+                                {{ $order->confirmed_at?->format('d M Y H:i') ?? '—' }}</td>
+                            <td class="px-3 py-2 text-gray-500">
+                                {{ $order->cancelled_at?->format('d M Y H:i') ?? '—' }}</td>
+                            <td class="px-3 py-2">{{ $order->invoice?->invoice_number ?? '—' }}</td>
+                            <td class="px-3 py-2 capitalize">{{ $order->invoice?->status ?? '—' }}</td>
+
+                            <td class="px-3 py-2 capitalize">{{ $order->shipments->first()?->status ?? '—' }}</td>
+                            <td class="px-3 py-2">{{ $order->shipments->first()?->carrier ?? '—' }}</td>
+                            <td class="px-3 py-2">{{ $order->shipments->first()?->tracking_number ?? '—' }}</td>
+                            <td class="px-3 py-2">
+                                {{ $order->shipments->first()?->shipped_at?->format('d M Y') ?? '—' }}</td>
+                            <td class="px-3 py-2">
+                                {{ $order->shipments->first()?->delivered_at?->format('d M Y') ?? '—' }}</td>
+
+
+
+
+                            <td class="px-3 py-2">{{ number_format($paid, 2) }}</td>
+                            <td class="px-3 py-2 {{ $balance > 0 ? 'text-red-600' : 'text-green-600' }}">
+                                {{ number_format($balance, 2) }}
                             </td>
 
                             <td class="px-3 py-2 text-right relative">
@@ -225,6 +267,7 @@
                 </tbody>
             </table>
 
+
         </div>
     </div>
 
@@ -251,6 +294,7 @@
                     ],
                     autoWidth: false,
                     scrollX: true,
+                    scrollCollapse: true,
                     responsive: false,
                     buttons: [{
                         extend: 'excelHtml5',
@@ -267,48 +311,64 @@
         <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
 
         <style>
-            /* Compact modern table */
-            #ordersTable th,
-            #ordersTable td {
-                padding: 6px 8px !important;
-                white-space: nowrap;
-            }
+    /* Compact modern table */
+    #ordersTable th,
+    #ordersTable td {
+        padding: 6px 8px !important;
+        white-space: nowrap;
+    }
 
-            #ordersTable thead th {
-                position: sticky;
-                top: 0;
-                z-index: 10;
-                background: #f9fafb;
-            }
+    /* Allow wrapping for long text columns */
+    #ordersTable td:nth-child(25),
+    #ordersTable td:nth-child(26),
+    #ordersTable td:nth-child(27) {
+        white-space: normal;
+        max-width: 280px;
+        word-break: break-word;
+    }
 
-            .dark #ordersTable thead th {
-                background: #374151;
-            }
+    #ordersTable thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #f9fafb;
+    }
 
-            #ordersTable tbody tr:hover {
-                background-color: rgba(59, 130, 246, 0.05);
-            }
+    .dark #ordersTable thead th {
+        background: #374151;
+    }
 
-            /* DataTable controls */
-            .dataTables_wrapper .dataTables_filter input,
-            .dataTables_wrapper .dataTables_length select {
-                border-radius: 0.375rem;
-                padding: 4px 8px;
-                border: 1px solid #e5e7eb;
-            }
+    #ordersTable tbody tr:hover {
+        background-color: rgba(59, 130, 246, 0.05);
+    }
 
-            .dataTables_wrapper .dt-buttons .dt-button {
-                background: #2563eb;
-                color: #fff;
-                border-radius: 6px;
-                padding: 6px 12px;
-                border: none;
-                margin-right: 6px;
-            }
+    /* DataTable controls */
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select {
+        border-radius: 0.375rem;
+        padding: 4px 8px;
+        border: 1px solid #e5e7eb;
+    }
 
-            .dataTables_wrapper .dt-buttons .dt-button:hover {
-                background: #1d4ed8;
-            }
-        </style>
+    .dataTables_wrapper .dt-buttons .dt-button {
+        background: #2563eb;
+        color: #fff;
+        border-radius: 6px;
+        padding: 6px 12px;
+        border: none;
+        margin-right: 6px;
+    }
+
+    .dataTables_wrapper .dt-buttons .dt-button:hover {
+        background: #1d4ed8;
+    }
+
+    /* Keep DataTables header & body aligned */
+    .dataTables_scrollHeadInner table,
+    .dataTables_scrollBody table {
+        width: 100% !important;
+    }
+</style>
+
     @endpush
 </x-layouts.app>

@@ -18,6 +18,7 @@ class Order extends Model
         'customer_name','customer_email','customer_phone',
         'billing_address','shipping_address',
         'paid_at','completed_at','meta',
+        'confirmed_at','cancelled_at',
         'created_by','updated_by',
     ];
 
@@ -27,6 +28,8 @@ class Order extends Model
         'expected_delivery_at' => 'date',
         'paid_at' => 'datetime',
         'completed_at' => 'datetime',
+        'confirmed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     public function customer()

@@ -112,12 +112,32 @@ class OrderStatusController extends Controller
                 }
             }
 
-            // Update order
+            // // Update order
+            // $order->update([
+            //     'status'       => $to,
+            //     'updated_by'   => auth()->id(),
+            //     'completed_at' => $to === 'delivered' ? now() : $order->completed_at,
+            // ]);
+
             $order->update([
-                'status'       => $to,
-                'updated_by'   => auth()->id(),
-                'completed_at' => $to === 'delivered' ? now() : $order->completed_at,
-            ]);
+    'status'     => $to,
+    'updated_by' => auth()->id(),
+
+    // Set once, never clear
+    'confirmed_at' => $to === 'confirmed'
+        ? now()
+        : $order->confirmed_at,
+
+    'cancelled_at' => $to === 'cancelled'
+        ? now()
+        : $order->cancelled_at,
+
+    'completed_at' => $to === 'delivered'
+        ? now()
+        : $order->completed_at,
+]);
+
+
 
             // Log status change
             OrderStatusLog::create([

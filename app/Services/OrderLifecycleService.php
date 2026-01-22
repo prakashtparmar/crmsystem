@@ -10,12 +10,12 @@ use Illuminate\Validation\ValidationException;
 class OrderLifecycleService
 {
     protected array $transitions = [
-        'draft'      => ['confirmed', 'cancelled'],
-        'confirmed'  => ['processing', 'shipped', 'cancelled'],
+        'draft' => ['confirmed', 'cancelled'],
+        'confirmed' => ['processing', 'shipped', 'cancelled'],
         'processing' => ['shipped', 'cancelled'],
-        'shipped'    => ['delivered'],
-        'delivered'  => [],
-        'cancelled'  => [],
+        'shipped' => ['delivered'],
+        'delivered' => [],
+        'cancelled' => [],
     ];
 
     public function changeStatus(
@@ -42,7 +42,7 @@ class OrderLifecycleService
              */
 
             // Invoice required before shipping or delivering
-            if (in_array($to, ['shipped', 'delivered'], true) && ! $order->invoice) {
+            if (in_array($to, ['shipped', 'delivered'], true) && !$order->invoice) {
                 throw ValidationException::withMessages([
                     'status' => 'Generate invoice before shipping or delivering this order.',
                 ]);
@@ -58,10 +58,10 @@ class OrderLifecycleService
             // Delivery requires a shipped shipment
             if ($to === 'delivered') {
                 $hasShipped = $order->shipments->contains(
-                    fn ($s) => $s->status === 'shipped'
+                    fn($s) => $s->status === 'shipped'
                 );
 
-                if (! $hasShipped) {
+                if (!$hasShipped) {
                     throw ValidationException::withMessages([
                         'status' => 'Order must have a shipped shipment before delivery.',
                     ]);
@@ -69,7 +69,7 @@ class OrderLifecycleService
             }
 
             // Validate transition (unchanged)
-            if (! in_array($to, $this->transitions[$from] ?? [], true)) {
+            if (!in_array($to, $this->transitions[$from] ?? [], true)) {
                 throw ValidationException::withMessages([
                     'status' => "Invalid status transition: {$from} → {$to}",
                 ]);
@@ -124,26 +124,46 @@ class OrderLifecycleService
 
                 if ($shipment) {
                     $shipment->update([
-                        'status'       => 'delivered',
+                        'status' => 'delivered',
                         'delivered_at' => now(),
                     ]);
                 }
             }
 
-            // Update order
+            // // Update order
+            // $order->update([
+            //     'status'       => $to,
+            //     'completed_at' => $to === 'delivered' ? now() : null,
+            // ]);
+
             $order->update([
-                'status'       => $to,
-                'completed_at' => $to === 'delivered' ? now() : null,
-            ]);
+    'status'     => $to,
+    'updated_by' => auth()->id(),
+
+    // Set once, never clear
+    'confirmed_at' => $to === 'confirmed'
+        ? now()
+        : $order->confirmed_at,
+
+    'cancelled_at' => $to === 'cancelled'
+        ? now()
+        : $order->cancelled_at,
+
+    'completed_at' => $to === 'delivered'
+        ? now()
+        : $order->completed_at,
+]);
+
+
 
             // Log
             OrderStatusLog::create([
-                'order_id'    => $order->id,
+                'order_id' => $order->id,
                 'from_status' => $from,
-                'to_status'   => $to,
-                'remarks'     => $remarks,
-                'changed_by'  => $userId,
-                'changed_at'  => now(),
+                'to_status' => $to,
+                'remarks' => $remarks,
+                'changed_by' => $userId,
+                'changed_at' => now(),
             ]);
         });
     }
