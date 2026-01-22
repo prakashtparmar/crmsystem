@@ -110,4 +110,21 @@ class SubCategoryController extends Controller
             ->route('subcategories.index')
             ->with('success', 'Sub Category deleted successfully.');
     }
+
+    public function bulkAction(Request $request)
+{
+    $request->validate([
+        'action' => 'required',
+        'ids'    => 'required|array',
+    ]);
+
+    if ($request->action === 'delete') {
+        SubCategory::whereIn('id', $request->ids)->delete();
+    }
+
+    return redirect()
+        ->route('subcategories.index')
+        ->with('success', 'Selected sub categories deleted successfully.');
+}
+
 }

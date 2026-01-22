@@ -49,7 +49,7 @@
                                 label="Category Name"
                                 name="name"
                                 type="text"
-                                value="{{ old('name', $category->name) }}"
+                                :value="old('name', $category->name)"
                                 required
                             />
 
@@ -57,7 +57,7 @@
                                 label="Slug"
                                 name="slug"
                                 type="text"
-                                value="{{ old('slug', $category->slug) }}"
+                                :value="old('slug', $category->slug)"
                             />
 
                             <div>

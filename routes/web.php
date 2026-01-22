@@ -145,12 +145,28 @@ Route::get('orders/{order}/invoice/print', [InvoiceController::class, 'print'])
     |--------------------------------------------------------------------------
     */
     Route::resource('products', ProductController::class);
+
+
+    Route::post('/categories/bulk-action', [CategoryController::class, 'bulkAction'])
+    ->name('categories.bulkAction');
+
+
     Route::resource('categories', CategoryController::class);
+
+    Route::post('subcategories/bulk-action', [SubCategoryController::class, 'bulkAction'])
+     ->name('subcategories.bulkAction');
+
     Route::resource('subcategories', SubCategoryController::class);
     Route::resource('brands', BrandController::class);
     Route::resource('units', UnitController::class);
     Route::resource('crops', CropController::class);
     Route::resource('seasons', SeasonController::class);
+
+    Route::post('product-variants/bulk-action', [ProductVariantController::class, 'bulkAction'])
+    ->name('product-variants.bulkAction');
+
+Route::post('product-variants/{id}/restore', [ProductVariantController::class, 'restore'])
+    ->name('product-variants.restore');
 
     Route::resource('product-variants', ProductVariantController::class);
     Route::resource('product-attributes', ProductAttributeController::class);

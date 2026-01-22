@@ -31,6 +31,7 @@
         Internal or enterprise reference code for this product.
     </p>
 
+    <!-- Category -->
     <div class="flex flex-col relative z-10">
         <label class="block text-sm font-medium mb-1">Category</label>
         <select name="category_id" class="form-select relative z-20" required>
@@ -47,6 +48,7 @@
         </p>
     </div>
 
+    <!-- Subcategory -->
     <div class="flex flex-col relative z-10">
         <label class="block text-sm font-medium mb-1">Sub Category</label>
         <select name="subcategory_id" class="form-select relative z-20">
@@ -60,6 +62,7 @@
         </select>
     </div>
 
+    <!-- Brand -->
     <div class="flex flex-col relative z-10">
         <label class="block text-sm font-medium mb-1">Brand</label>
         <select name="brand_id" class="form-select relative z-20">
@@ -73,6 +76,7 @@
         </select>
     </div>
 
+    <!-- Unit -->
     <div class="flex flex-col relative z-10">
         <label class="block text-sm font-medium mb-1">Unit</label>
         <select name="unit_id" class="form-select relative z-20" required>
@@ -89,6 +93,7 @@
         </p>
     </div>
 
+    <!-- Crop -->
     <div class="flex flex-col relative z-10">
         <label class="block text-sm font-medium mb-1">Crop</label>
         <select name="crop_id" class="form-select relative z-20">
@@ -102,6 +107,7 @@
         </select>
     </div>
 
+    <!-- Season -->
     <div class="flex flex-col relative z-10">
         <label class="block text-sm font-medium mb-1">Season</label>
         <select name="season_id" class="form-select relative z-20">
@@ -155,6 +161,25 @@
         :value="old('tags', isset($product) ? $product->tags->pluck('tag')->implode(', ') : '')"
         placeholder="Best Seller, Govt Approved"
     />
+
+    {{-- Existing Images (Edit Mode) --}}
+    @if(isset($product) && $product->images->count())
+        <div class="flex flex-col gap-2">
+            <label class="block text-sm font-medium">Existing Images</label>
+            <div class="flex flex-wrap gap-2">
+                @foreach($product->images as $img)
+                    <div class="w-16 h-16 rounded-md overflow-hidden border bg-gray-100">
+                        <img src="{{ asset('storage/'.$img->path) }}"
+                             class="w-full h-full object-cover"
+                             alt="Product Image">
+                    </div>
+                @endforeach
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+                Uploading new images will append to these.
+            </p>
+        </div>
+    @endif
 
     <div class="flex flex-col">
         <label class="block text-sm font-medium mb-1">Product Images</label>

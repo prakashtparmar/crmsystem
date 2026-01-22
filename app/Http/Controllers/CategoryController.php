@@ -97,4 +97,21 @@ class CategoryController extends Controller
             ->route('categories.index')
             ->with('success', 'Category deleted successfully.');
     }
+
+    public function bulkAction(Request $request)
+{
+    $request->validate([
+        'action' => 'required|string',
+        'ids'    => 'required|array',
+    ]);
+
+    if ($request->action === 'delete') {
+        Category::whereIn('id', $request->ids)->delete();
+    }
+
+    return redirect()
+        ->route('categories.index')
+        ->with('success', 'Selected categories processed successfully.');
+}
+
 }

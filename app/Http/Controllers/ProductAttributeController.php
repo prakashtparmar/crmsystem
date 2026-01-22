@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
+use App\Models\ProductAttribute;
 use Illuminate\Http\Request;
 
 class ProductAttributeController extends Controller
@@ -11,7 +13,9 @@ class ProductAttributeController extends Controller
      */
     public function index()
     {
-        //
+        $attributes = ProductAttribute::with('product')->latest()->get();
+
+        return view('product_attributes.index', compact('attributes'));
     }
 
     /**
@@ -19,7 +23,9 @@ class ProductAttributeController extends Controller
      */
     public function create()
     {
-        //
+        $products = Product::orderBy('name')->get();
+
+        return view('product_attributes.create', compact('products'));
     }
 
     /**
@@ -27,38 +33,59 @@ class ProductAttributeController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $data = $request->validate([
+            'product_id' => ['required', 'exists:products,id'],
+            'name'       => ['required', 'string', 'max:255'],
+            'value'      => ['required', 'string', 'max:255'],
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+        ProductAttribute::create($data);
+
+        return redirect()
+            ->route('product-attributes.index')
+            ->with('success', 'Attribute created successfully.');
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(ProductAttribute $product_attribute)
     {
-        //
+        $products = Product::orderBy('name')->get();
+
+        return view('product_attributes.edit', [
+            'attribute' => $product_attribute,
+            'products'  => $products,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, ProductAttribute $product_attribute)
     {
-        //
+        $data = $request->validate([
+            'product_id' => ['required', 'exists:products,id'],
+            'name'       => ['required', 'string', 'max:255'],
+            'value'      => ['required', 'string', 'max:255'],
+        ]);
+
+        $product_attribute->update($data);
+
+        return redirect()
+            ->route('product-attributes.index')
+            ->with('success', 'Attribute updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(ProductAttribute $product_attribute)
     {
-        //
+        $product_attribute->delete();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Attribute deleted successfully.');
     }
 }

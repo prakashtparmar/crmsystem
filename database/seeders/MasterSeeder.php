@@ -3,12 +3,24 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\{Category, SubCategory, Brand, Unit, Crop, Season};
+use App\Models\{
+    Category,
+    SubCategory,
+    Brand,
+    Unit,
+    Crop,
+    Season
+};
 
 class MasterSeeder extends Seeder
 {
     public function run(): void
     {
+        /*
+        |--------------------------------------------------------------------------
+        | CATEGORY & SUBCATEGORY
+        |--------------------------------------------------------------------------
+        */
         $cat = Category::create([
             'name' => 'Seeds',
             'slug' => 'seeds',
@@ -20,69 +32,88 @@ class MasterSeeder extends Seeder
             'slug'        => 'hybrid-seeds',
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | BRANDS
+        |--------------------------------------------------------------------------
+        */
         Brand::insert([
             [
-                'name'        => 'AgriGold',
-                'slug'        => 'agrigold',
+                'name'       => 'AgriGold',
+                'slug'       => 'agrigold',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name'        => 'GreenGrow',
-                'slug'        => 'greengrow',
+                'name'       => 'GreenGrow',
+                'slug'       => 'greengrow',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | UNITS
+        |--------------------------------------------------------------------------
+        */
         Unit::insert([
             [
-                'name'        => 'Kilogram',
-                'slug'        => 'kilogram',
-                'symbol'      => 'kg',
+                'name'       => 'Kilogram',
+                'slug'       => 'kilogram',
+                'symbol'     => 'kg',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name'        => 'Quintal',
-                'slug'        => 'quintal',
-                'symbol'      => 'qtl',
+                'name'       => 'Quintal',
+                'slug'       => 'quintal',
+                'symbol'     => 'qtl',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name'        => 'Bag',
-                'slug'        => 'bag',
-                'symbol'      => 'bag',
+                'name'       => 'Bag',
+                'slug'       => 'bag',
+                'symbol'     => 'bag',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | CROPS
+        |--------------------------------------------------------------------------
+        */
         Crop::insert([
             [
-                'name'        => 'Wheat',
-                'slug'        => 'wheat',
+                'name'       => 'Wheat',
+                'slug'       => 'wheat',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name'        => 'Rice',
-                'slug'        => 'rice',
+                'name'       => 'Rice',
+                'slug'       => 'rice',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ]);
 
-        // Seasons table has NO slug column
+        /*
+        |--------------------------------------------------------------------------
+        | SEASONS (No slug column)
+        |--------------------------------------------------------------------------
+        */
         Season::insert([
             [
-                'name'        => 'Kharif',
+                'name'       => 'Kharif',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name'        => 'Rabi',
+                'name'       => 'Rabi',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

@@ -33,54 +33,60 @@
                 </div>
             @endif
 
-            <form action="{{ route('subcategories.store') }}" method="POST" class="max-w-2xl space-y-4">
-                @csrf
+            @can('subcategories.create')
+                <form action="{{ route('subcategories.store') }}" method="POST" class="max-w-2xl space-y-4">
+                    @csrf
 
-                <div>
-                    <label class="block text-sm font-medium mb-1">Category</label>
-                    <select name="category_id"
-                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900"
-                        required>
-                        <option value="">-- Select Category --</option>
-                        @foreach($categories as $c)
-                            <option value="{{ $c->id }}" @selected(old('category_id') == $c->id)>
-                                {{ $c->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Category</label>
+                        <select name="category_id"
+                            class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900"
+                            required>
+                            <option value="">-- Select Category --</option>
+                            @foreach($categories as $c)
+                                <option value="{{ $c->id }}" @selected(old('category_id') == $c->id)>
+                                    {{ $c->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <x-forms.input
+                        label="Sub Category Name"
+                        name="name"
+                        type="text"
+                        value="{{ old('name') }}"
+                        required
+                    />
+
+                    <x-forms.input
+                        label="Slug"
+                        name="slug"
+                        type="text"
+                        value="{{ old('slug') }}"
+                    />
+
+                    <input type="hidden" name="is_active" value="0">
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" name="is_active" value="1"
+                            class="rounded border-gray-300 dark:border-gray-700"
+                            @checked(old('is_active', true))>
+                        <label class="text-sm">Active</label>
+                    </div>
+
+                    <div class="flex items-center gap-3 pt-4">
+                        <x-button type="primary">{{ __('Save Sub Category') }}</x-button>
+                        <a href="{{ route('subcategories.index') }}"
+                           class="px-4 py-2 border rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            {{ __('Cancel') }}
+                        </a>
+                    </div>
+                </form>
+            @else
+                <div class="p-4 rounded bg-yellow-100 text-yellow-800">
+                    You do not have permission to create sub categories.
                 </div>
-
-                <x-forms.input
-                    label="Sub Category Name"
-                    name="name"
-                    type="text"
-                    value="{{ old('name') }}"
-                    required
-                />
-
-                <x-forms.input
-                    label="Slug"
-                    name="slug"
-                    type="text"
-                    value="{{ old('slug') }}"
-                />
-
-                <input type="hidden" name="is_active" value="0">
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" name="is_active" value="1"
-                        class="rounded border-gray-300 dark:border-gray-700"
-                        @checked(old('is_active', true))>
-                    <label class="text-sm">Active</label>
-                </div>
-
-                <div class="flex items-center gap-3 pt-4">
-                    <x-button type="primary">{{ __('Save Sub Category') }}</x-button>
-                    <a href="{{ route('subcategories.index') }}"
-                       class="px-4 py-2 border rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                        {{ __('Cancel') }}
-                    </a>
-                </div>
-            </form>
+            @endcan
         </div>
     </div>
 </x-layouts.app>
