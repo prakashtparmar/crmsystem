@@ -7,22 +7,35 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 use App\Models\{
-    Category, SubCategory, Brand, Unit, Crop, Season,
-    Product, ProductVariant, ProductAttribute, ProductImage, ProductTag,
-    BatchLot, Expiry, Certification,
-    Warehouse, ProductStock, StockMovement
+    Category,
+    SubCategory,
+    Brand,
+    Unit,
+    Crop,
+    Season,
+    Product,
+    ProductVariant,
+    ProductAttribute,
+    ProductImage,
+    ProductTag,
+    BatchLot,
+    Expiry,
+    Certification,
+    Warehouse,
+    ProductStock,
+    StockMovement
 };
 
 class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        $category    = Category::first();
+        $category = Category::first();
         $subcategory = SubCategory::first();
-        $brand       = Brand::first();
-        $unit        = Unit::first();
-        $crop        = Crop::first();
-        $season      = Season::first();
+        $brand = Brand::first();
+        $unit = Unit::first();
+        $crop = Crop::first();
+        $season = Season::first();
 
         // Create Warehouses if not exists
         $mainWarehouse = Warehouse::firstOrCreate(
@@ -39,29 +52,29 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Wheat Hybrid Seed A1',
                 'slug' => 'wheat-hybrid-seed-a1',
-                'sku'  => 'WHT-A1',
-                'price'=> 1200,
-                'gst'  => 5,
+                'sku' => 'WHT-A1',
+                'price' => 1200,
+                'gst' => 5,
                 'tags' => ['Best Seller', 'Govt Approved'],
-                'attrs'=> ['Germination' => '90%', 'Purity' => '98%'],
+                'attrs' => ['Germination' => '90%', 'Purity' => '98%'],
             ],
             [
                 'name' => 'Rice Basmati Seed',
                 'slug' => 'rice-basmati-seed',
-                'sku'  => 'RICE-BAS',
-                'price'=> 950,
-                'gst'  => 5,
+                'sku' => 'RICE-BAS',
+                'price' => 950,
+                'gst' => 5,
                 'tags' => ['Premium', 'High Yield'],
-                'attrs'=> ['Germination' => '88%', 'Purity' => '97%'],
+                'attrs' => ['Germination' => '88%', 'Purity' => '97%'],
             ],
             [
                 'name' => 'Maize Hybrid Seed',
                 'slug' => 'maize-hybrid-seed',
-                'sku'  => 'MAIZE-HYB',
-                'price'=> 780,
-                'gst'  => 5,
+                'sku' => 'MAIZE-HYB',
+                'price' => 780,
+                'gst' => 5,
                 'tags' => ['Fast Growth'],
-                'attrs'=> ['Germination' => '92%'],
+                'attrs' => ['Germination' => '92%'],
             ],
         ];
 
@@ -77,7 +90,7 @@ class ProductSeeder extends Seeder
 
                 'name' => $row['name'],
                 'slug' => $row['slug'],
-                'sku'  => $row['sku'],
+                'sku' => $row['sku'],
                 'short_description' => $row['name'] . ' premium quality product',
                 'description' => 'Enterprise grade agriculture product.',
                 'price' => $row['price'],
@@ -110,9 +123,10 @@ class ProductSeeder extends Seeder
 
             ProductImage::create([
                 'product_id' => $product->id,
-                'path' => 'products/' . Str::slug($row['name']) . '.jpg',
+                'path' => 'products/agriimage.jpg',
                 'is_primary' => true,
             ]);
+
 
             foreach ($row['tags'] as $tag) {
                 ProductTag::create([

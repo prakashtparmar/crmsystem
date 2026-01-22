@@ -80,14 +80,11 @@
                         </section>
                     </div>
 
-
-
                     <!-- Address -->
                     <section class="space-y-1.5">
                         <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Address</h3>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                            <!-- Row 1: Long fields -->
                             <div class="col-span-1 sm:col-span-2 lg:col-span-2">
                                 <x-forms.input label="Address Line 1" name="address_line1" />
                             </div>
@@ -96,7 +93,6 @@
                                 <x-forms.input label="Address Line 2" name="address_line2" />
                             </div>
 
-                            <!-- Row 2 -->
                             <div class="col-span-1">
                                 <x-forms.input label="Village" name="village" />
                             </div>
@@ -113,7 +109,6 @@
                                 <x-forms.input label="State" name="state" />
                             </div>
 
-                            <!-- Row 3 -->
                             <div class="col-span-1">
                                 <x-forms.input label="Country" name="country" value="{{ old('country', 'India') }}" />
                             </div>
@@ -124,73 +119,107 @@
                         </div>
                     </section>
 
-
                     <!-- Agriculture + Finance -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <!-- Agriculture -->
-    <section class="space-y-2">
-        <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Agriculture</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="w-full">
-                <x-forms.input label="Land Area" name="land_area" />
-            </div>
+                        <!-- Agriculture -->
+                        <section class="space-y-2">
+                            <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
+                                Agriculture
+                            </h3>
 
-            <div class="flex flex-col w-full">
-                <label class="block text-sm font-medium mb-1">Land Unit</label>
-                <select name="land_unit"
-                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                    @foreach (['acre','hectare','bigha'] as $u)
-                        <option value="{{ $u }}" @selected(old('land_unit','acre') == $u)>
-                            {{ ucfirst($u) }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div class="w-full">
+                                    <x-forms.input label="Land Area" name="land_area" type="number" min="0" step="0.01" />
+                                </div>
 
-            <div class="w-full">
-                <x-forms.input label="Primary Crops" name="primary_crops" />
-            </div>
+                                <div class="flex flex-col w-full">
+                                    <label class="block text-sm font-medium mb-1">Land Unit</label>
+                                    <select name="land_unit"
+                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                        @foreach (['acre', 'hectare', 'bigha'] as $u)
+                                            <option value="{{ $u }}" @selected(old('land_unit', 'acre') == $u)>
+                                                {{ ucfirst($u) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
-            <div class="w-full">
-                <x-forms.input label="Secondary Crops" name="secondary_crops" />
-            </div>
+                                <div class="md:col-span-3">
+                                    <label class="block text-sm font-medium mb-1">Primary Crops</label>
+                                    <div id="primary-box"
+                                        class="flex flex-wrap gap-1 p-2 border rounded-md dark:border-gray-700 dark:bg-gray-900">
+                                        <input id="primary-input" type="text" list="crop-list"
+                                            class="flex-1 min-w-[120px] bg-transparent outline-none text-sm"
+                                            placeholder="Type crop & press Enter" />
+                                    </div>
+                                    <input type="hidden" name="primary_crops" id="primary-hidden"
+                                        value="{{ old('primary_crops') }}">
+                                </div>
 
-            <div class="flex flex-col w-full">
-                <label class="block text-sm font-medium mb-1">Irrigation Type</label>
-                <select name="irrigation_type"
-                    class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                    @foreach (['rainfed','canal','drip','sprinkler','borewell'] as $i)
-                        <option value="{{ $i }}" @selected(old('irrigation_type') == $i)>
-                            {{ ucfirst($i) }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-    </section>
+                                <div class="md:col-span-3">
+                                    <label class="block text-sm font-medium mb-1">Secondary Crops</label>
+                                    <div id="secondary-box"
+                                        class="flex flex-wrap gap-1 p-2 border rounded-md dark:border-gray-700 dark:bg-gray-900">
+                                        <input id="secondary-input" type="text" list="crop-list"
+                                            class="flex-1 min-w-[120px] bg-transparent outline-none text-sm"
+                                            placeholder="Type crop & press Enter" />
+                                    </div>
+                                    <input type="hidden" name="secondary_crops" id="secondary-hidden"
+                                        value="{{ old('secondary_crops') }}">
+                                </div>
 
-    <!-- Financial -->
-    <section class="space-y-2">
-        <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Financial</h3>
+                                <div class="flex flex-col w-full md:col-span-1">
+                                    <label class="block text-sm font-medium mb-1">Irrigation Type</label>
+                                    <select name="irrigation_type"
+                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                        @foreach (['rainfed', 'canal', 'drip', 'sprinkler', 'borewell'] as $i)
+                                            <option value="{{ $i }}" @selected(old('irrigation_type') == $i)>
+                                                {{ ucfirst($i) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div class="w-full">
-                <x-forms.input label="Credit Limit" name="credit_limit" value="{{ old('credit_limit',0) }}" />
-            </div>
+                            <datalist id="crop-list">
+                                <option value="Wheat">
+                                <option value="Rice">
+                                <option value="Cotton">
+                                <option value="Maize">
+                                <option value="Bajra">
+                                <option value="Jowar">
+                                <option value="Sugarcane">
+                                <option value="Groundnut">
+                                <option value="Soybean">
+                                <option value="Onion">
+                                <option value="Potato">
+                                <option value="Tomato">
+                            </datalist>
+                        </section>
 
-            <div class="w-full">
-                <x-forms.input label="Outstanding Balance" name="outstanding_balance" value="{{ old('outstanding_balance',0) }}" />
-            </div>
+                        <!-- Financial -->
+                        <section class="space-y-2">
+                            <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Financial</h3>
 
-            <div class="w-full">
-                <x-forms.input label="Credit Valid Till" name="credit_valid_till" type="date" />
-            </div>
-        </div>
-    </section>
-</div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="w-full">
+                                    <x-forms.input label="Credit Limit" name="credit_limit"
+                                        value="{{ old('credit_limit', 0) }}" />
+                                </div>
 
+                                <div class="w-full">
+                                    <x-forms.input label="Outstanding Balance" name="outstanding_balance"
+                                        value="{{ old('outstanding_balance', 0) }}" />
+                                </div>
 
+                                <div class="w-full">
+                                    <x-forms.input label="Credit Valid Till" name="credit_valid_till"
+                                        type="date" />
+                                </div>
+                            </div>
+                        </section>
+                    </div>
 
                     <!-- Status -->
                     <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -217,45 +246,45 @@
                     </section>
 
                     <!-- Optional Business Details -->
-<section class="space-y-2">
-    <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
-        Optional Business Details
-    </h3>
+                    <section class="space-y-2">
+                        <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
+                            Optional Business Details
+                        </h3>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <div class="w-full">
-            <x-forms.input label="Shop Name" name="company_name" value="{{ old('company_name') }}" />
-        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div class="w-full">
+                                <x-forms.input label="Shop Name" name="company_name"
+                                    value="{{ old('company_name') }}" />
+                            </div>
 
-        <div class="w-full">
-            <x-forms.input label="GST Number" name="gst_number" value="{{ old('gst_number') }}" />
-        </div>
+                            <div class="w-full">
+                                <x-forms.input label="GST Number" name="gst_number"
+                                    value="{{ old('gst_number') }}" />
+                            </div>
 
-        <div class="w-full">
-            <x-forms.input label="PAN Number" name="pan_number" value="{{ old('pan_number') }}" />
-        </div>
-    </div>
-</section>
+                            <div class="w-full">
+                                <x-forms.input label="PAN Number" name="pan_number"
+                                    value="{{ old('pan_number') }}" />
+                            </div>
+                        </div>
+                    </section>
 
+                    <!-- Optional Location -->
+                    <section class="space-y-2">
+                        <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
+                            Optional Location
+                        </h3>
 
-<!-- Optional Location -->
-<section class="space-y-2">
-    <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
-        Optional Location
-    </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="w-full">
+                                <x-forms.input label="Latitude" name="latitude" />
+                            </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div class="w-full">
-            <x-forms.input label="Latitude" name="latitude" />
-        </div>
-
-        <div class="w-full">
-            <x-forms.input label="Longitude" name="longitude" />
-        </div>
-    </div>
-</section>
-
-
+                            <div class="w-full">
+                                <x-forms.input label="Longitude" name="longitude" />
+                            </div>
+                        </div>
+                    </section>
 
                     <!-- Actions -->
                     <div class="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -271,4 +300,63 @@
             </div>
         </div>
     </div>
+
+   <script>
+    function tagInput(boxId, inputId, hiddenId) {
+        const box = document.getElementById(boxId);
+        const input = document.getElementById(inputId);
+        const hidden = document.getElementById(hiddenId);
+
+        let items = hidden.value ? hidden.value.split(',').filter(Boolean) : [];
+
+        function render() {
+            box.querySelectorAll('.tag').forEach(t => t.remove());
+            items.forEach((c, i) => {
+                const tag = document.createElement('span');
+                tag.className =
+                    'tag px-2 py-0.5 text-xs rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 flex items-center gap-1';
+                tag.innerHTML = `${c} <button type="button" data-i="${i}" class="font-bold">×</button>`;
+                box.insertBefore(tag, input);
+            });
+            hidden.value = items.join(',');
+        }
+
+        function addItem(value) {
+            const v = value.trim();
+            if (!v) return;
+            if (!items.includes(v)) {
+                items.push(v);
+                render();
+            }
+            input.value = '';
+        }
+
+        // Add on Enter
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addItem(input.value);
+            }
+        });
+
+        // Add when user selects from datalist (mouse click / touch)
+        input.addEventListener('change', () => {
+            addItem(input.value);
+        });
+
+        box.addEventListener('click', e => {
+            if (e.target.tagName === 'BUTTON') {
+                items.splice(e.target.dataset.i, 1);
+                render();
+            }
+        });
+
+        render();
+    }
+
+    tagInput('primary-box', 'primary-input', 'primary-hidden');
+    tagInput('secondary-box', 'secondary-input', 'secondary-hidden');
+</script>
+
+
 </x-layouts.app>
