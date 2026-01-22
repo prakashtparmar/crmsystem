@@ -11,12 +11,12 @@
                 @csrf
                 <!-- Email Input -->
                 <div>
-                    <x-forms.input label="Email" name="email" type="email" placeholder="your@email.com" value="admin@example.com" autofocus />
+                    <x-forms.input label="Email" name="email" type="email" placeholder="Enter Your Email ID" autofocus />
                 </div>
 
                 <!-- Password Input -->
                 <div>
-                    <x-forms.input label="Password" name="password" type="password" placeholder="••••••••" value="password" />
+                    <x-forms.input label="Password" name="password" type="password" placeholder="Enter Your Password" />
 
                     <!-- Remember me & password reset -->
                     <div class="flex items-center justify-between mt-2">
