@@ -14,36 +14,54 @@ class DashboardController extends Controller
 {
     public function __invoke()
     {
-        // Core totals (existing logic - unchanged)
-        $totalUsers   = User::count();
-        $totalOrders  = Order::count();
-        $totalRevenue = Order::where('status', 'delivered')->sum('grand_total');
+        $user = auth()->user();
+
+        // Base order query using permissions (not roles)
+        $orderQuery = Order::query()
+            ->when(
+                $user->can('orders.view_own') && ! $user->can('orders.view_all'),
+                fn ($q) => $q->where('created_by', $user->id)
+            );
+
+        // Core totals
+        $totalUsers   = User::count(); // global
+        $totalOrders  = (clone $orderQuery)->count();
+        $totalRevenue = (clone $orderQuery)
+            ->where('status', 'delivered')
+            ->sum('grand_total');
 
         // Visitors (until you implement tracking)
         $totalVisitors = 0;
 
-        // This week stats (existing logic - unchanged)
+        // This week stats
         $thisWeek = [
-            'users'   => User::where('created_at', '>=', Carbon::now()->startOfWeek())->count(),
-            'orders'  => Order::where('created_at', '>=', Carbon::now()->startOfWeek())->count(),
-            'revenue' => Order::where('status', 'delivered')
+            'users' => User::where('created_at', '>=', Carbon::now()->startOfWeek())->count(),
+
+            'orders' => (clone $orderQuery)
+                ->where('created_at', '>=', Carbon::now()->startOfWeek())
+                ->count(),
+
+            'revenue' => (clone $orderQuery)
+                ->where('status', 'delivered')
                 ->where('created_at', '>=', Carbon::now()->startOfWeek())
                 ->sum('grand_total'),
         ];
 
-        // Last week stats (existing logic - unchanged)
+        // Last week stats
         $lastWeek = [
-            'users'   => User::whereBetween('created_at', [
+            'users' => User::whereBetween('created_at', [
                 Carbon::now()->subWeek()->startOfWeek(),
                 Carbon::now()->subWeek()->endOfWeek(),
             ])->count(),
 
-            'orders'  => Order::whereBetween('created_at', [
-                Carbon::now()->subWeek()->startOfWeek(),
-                Carbon::now()->subWeek()->endOfWeek(),
-            ])->count(),
+            'orders' => (clone $orderQuery)
+                ->whereBetween('created_at', [
+                    Carbon::now()->subWeek()->startOfWeek(),
+                    Carbon::now()->subWeek()->endOfWeek(),
+                ])->count(),
 
-            'revenue' => Order::where('status', 'delivered')
+            'revenue' => (clone $orderQuery)
+                ->where('status', 'delivered')
                 ->whereBetween('created_at', [
                     Carbon::now()->subWeek()->startOfWeek(),
                     Carbon::now()->subWeek()->endOfWeek(),
@@ -57,14 +75,14 @@ class DashboardController extends Controller
         $totalCustomers = Customer::count();
         $totalProducts  = Product::count();
 
-        // Low stock based on product_stocks (same logic used elsewhere)
+        // Low stock based on product_stocks
         $lowStockCount = DB::table('product_stocks')
             ->selectRaw('product_id, SUM(quantity - reserved_qty) as available_qty')
             ->groupBy('product_id')
             ->havingRaw('SUM(quantity - reserved_qty) <= ?', [10])
             ->count();
 
-        // FIXED: campaigns table has no `is_active` column
+        // Campaigns
         $activeCampaigns = Campaign::count();
 
         return view('dashboard', compact(

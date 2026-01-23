@@ -13,8 +13,33 @@ use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
-    public function index()
+//     public function index()
+// {
+//     $orders = Order::with([
+//             'customer',
+//             'creator',
+//             'invoice',
+//             'shipments',
+//         ])
+//         ->withSum('payments as total_paid', 'amount')
+//         ->latest()
+//         ->paginate(20);
+
+//     return view('orders.index', compact('orders'));
+// }
+
+public function index()
 {
+    $user = auth()->user();
+
+    // Optional: block completely if user has no view permission
+    abort_unless(
+        $user->can('orders.view') ||
+        $user->can('orders.view_all') ||
+        $user->can('orders.view_own'),
+        403
+    );
+
     $orders = Order::with([
             'customer',
             'creator',
@@ -22,11 +47,16 @@ class OrderController extends Controller
             'shipments',
         ])
         ->withSum('payments as total_paid', 'amount')
+        ->when(
+            $user->can('orders.view_own') && ! $user->can('orders.view_all'),
+            fn ($q) => $q->where('created_by', $user->id)
+        )
         ->latest()
         ->paginate(20);
 
     return view('orders.index', compact('orders'));
 }
+
 
 
     public function create()

@@ -40,10 +40,7 @@ use App\Http\Controllers\CheckoutController;
 | Public Routes
 |--------------------------------------------------------------------------
 */
-Route::get('/', function () {
-    return redirect()->route('login');
-});
-
+Route::get('/', fn () => redirect()->route('login'));
 
 /*
 |--------------------------------------------------------------------------
@@ -51,138 +48,143 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 Route::get('dashboard', DashboardController::class)
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'can:dashboard.view'])
     ->name('dashboard');
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated Admin Routes
+| Authenticated & Secured Routes
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Settings
-    |--------------------------------------------------------------------------
-    */
-    Route::get('settings/profile', [Settings\ProfileController::class, 'edit'])->name('settings.profile.edit');
-    Route::put('settings/profile', [Settings\ProfileController::class, 'update'])->name('settings.profile.update');
-    Route::delete('settings/profile', [Settings\ProfileController::class, 'destroy'])->name('settings.profile.destroy');
+    /* ================= Settings ================= */
+    Route::get('settings/profile', [Settings\ProfileController::class, 'edit'])
+        ->middleware('can:settings-profile.view')->name('settings.profile.edit');
+    Route::put('settings/profile', [Settings\ProfileController::class, 'update'])
+        ->middleware('can:settings-profile.edit')->name('settings.profile.update');
+    Route::delete('settings/profile', [Settings\ProfileController::class, 'destroy'])
+        ->middleware('can:settings-profile.delete')->name('settings.profile.destroy');
 
-    Route::get('settings/password', [Settings\PasswordController::class, 'edit'])->name('settings.password.edit');
-    Route::put('settings/password', [Settings\PasswordController::class, 'update'])->name('settings.password.update');
+    Route::get('settings/password', [Settings\PasswordController::class, 'edit'])
+        ->middleware('can:settings-password.view')->name('settings.password.edit');
+    Route::put('settings/password', [Settings\PasswordController::class, 'update'])
+        ->middleware('can:settings-password.edit')->name('settings.password.update');
 
-    Route::get('settings/appearance', [Settings\AppearanceController::class, 'edit'])->name('settings.appearance.edit');
+    Route::get('settings/appearance', [Settings\AppearanceController::class, 'edit'])
+        ->middleware('can:settings-appearance.view')->name('settings.appearance.edit');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Orders – Core
-    |--------------------------------------------------------------------------
-    */
-    Route::resource('orders', OrderController::class);
+    /* ================= Orders ================= */
+    Route::resource('orders', OrderController::class)->middleware([
+        'index' => 'can:orders.view',
+        'show' => 'can:orders.view',
+        'create' => 'can:orders.create',
+        'store' => 'can:orders.create',
+        'edit' => 'can:orders.edit',
+        'update' => 'can:orders.edit',
+        'destroy' => 'can:orders.delete',
+    ]);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Orders – Enterprise Sub Modules
-    |--------------------------------------------------------------------------
-    */
-    Route::post('orders/{order}/items', [OrderItemController::class, 'store'])->name('orders.items.store');
-    Route::delete('orders/{order}/items/{item}', [OrderItemController::class, 'destroy'])->name('orders.items.destroy');
+    Route::post('orders/{order}/items', [OrderItemController::class, 'store'])
+        ->middleware('can:orders.edit')->name('orders.items.store');
+    Route::delete('orders/{order}/items/{item}', [OrderItemController::class, 'destroy'])
+        ->middleware('can:orders.edit')->name('orders.items.destroy');
 
-    Route::put('orders/{order}/status', [OrderStatusController::class, 'update'])->name('orders.status.update');
-    Route::post('orders/{order}/payments', [PaymentController::class, 'store'])->name('orders.payments.store');
-    Route::post('orders/{order}/shipments', [ShipmentController::class, 'store'])->name('orders.shipments.store');
-    Route::post('orders/{order}/invoice', [InvoiceController::class, 'store'])->name('orders.invoice.store');
-Route::get('orders/{order}/invoice/download', [InvoiceController::class, 'download'])
-    ->name('orders.invoice.download');
+    Route::put('orders/{order}/status', [OrderStatusController::class, 'update'])
+        ->middleware('can:orders.edit')->name('orders.status.update');
+    Route::post('orders/{order}/payments', [PaymentController::class, 'store'])
+        ->middleware('can:orders.edit')->name('orders.payments.store');
+    Route::post('orders/{order}/shipments', [ShipmentController::class, 'store'])
+        ->middleware('can:shipments.create')->name('orders.shipments.store');
+    Route::post('orders/{order}/invoice', [InvoiceController::class, 'store'])
+        ->middleware('can:invoices.create')->name('orders.invoice.store');
 
-Route::get('orders/{order}/invoice/print', [InvoiceController::class, 'print'])
-    ->name('orders.invoice.print');
+    Route::get('orders/{order}/invoice/download', [InvoiceController::class, 'download'])
+        ->middleware('can:invoices.view')->name('orders.invoice.download');
+    Route::get('orders/{order}/invoice/print', [InvoiceController::class, 'print'])
+        ->middleware('can:invoices.view')->name('orders.invoice.print');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cart & Checkout
-    |--------------------------------------------------------------------------
-    */
-    Route::post('cart/add', [CartController::class, 'add'])->name('cart.add');
-    Route::get('cart', [CartController::class, 'view'])->name('cart.view');
-    Route::post('checkout/place', [CheckoutController::class, 'place'])->name('checkout.place');
+    /* ================= Cart & Checkout ================= */
+    Route::post('cart/add', [CartController::class, 'add'])
+        ->middleware('can:cart.create')->name('cart.add');
+    Route::get('cart', [CartController::class, 'view'])
+        ->middleware('can:cart.view')->name('cart.view');
+    Route::post('checkout/place', [CheckoutController::class, 'place'])
+        ->middleware('can:checkout.create')->name('checkout.place');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Inventory (Enterprise Extensions)
-    |--------------------------------------------------------------------------
-    */
+    /* ================= Inventory ================= */
     Route::prefix('inventory')->name('inventory.')->group(function () {
-        Route::get('/in', [InventoryController::class, 'createIn'])->name('in.create');
-        Route::post('/in', [InventoryController::class, 'storeIn'])->name('in.store');
+        Route::get('/in', [InventoryController::class, 'createIn'])
+            ->middleware('can:inventory.create')->name('in.create');
+        Route::post('/in', [InventoryController::class, 'storeIn'])
+            ->middleware('can:inventory.create')->name('in.store');
 
-        Route::get('/transfer', [InventoryController::class, 'createTransfer'])->name('transfer.create');
-        Route::post('/transfer', [InventoryController::class, 'transfer'])->name('transfer.store');
+        Route::get('/transfer', [InventoryController::class, 'createTransfer'])
+            ->middleware('can:inventory.edit')->name('transfer.create');
+        Route::post('/transfer', [InventoryController::class, 'transfer'])
+            ->middleware('can:inventory.edit')->name('transfer.store');
     });
 
     Route::get('inventory/available', [InventoryController::class, 'available'])
-    ->name('inventory.available');
+        ->middleware('can:inventory.view')->name('inventory.available');
 
+    Route::resource('inventory', InventoryController::class)->middleware([
+        'index' => 'can:inventory.view',
+        'show' => 'can:inventory.view',
+        'create' => 'can:inventory.create',
+        'store' => 'can:inventory.create',
+        'edit' => 'can:inventory.edit',
+        'update' => 'can:inventory.edit',
+        'destroy' => 'can:inventory.delete',
+    ]);
 
-    Route::resource('inventory', InventoryController::class);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Customers
-    |--------------------------------------------------------------------------
-    */
-    Route::get('customers/search', [CustomerController::class, 'search'])->name('customers.search');
-    Route::resource('customers', CustomerController::class);
+    /* ================= Customers ================= */
+    Route::get('customers/search', [CustomerController::class, 'search'])
+        ->middleware('can:customers.view')->name('customers.search');
     Route::get('customers/{customer}/addresses', [CustomerController::class, 'addresses'])
-    ->name('customers.addresses');
+        ->middleware('can:customers.view')->name('customers.addresses');
 
+    Route::resource('customers', CustomerController::class)->middleware([
+        'index' => 'can:customers.view',
+        'show' => 'can:customers.view',
+        'create' => 'can:customers.create',
+        'store' => 'can:customers.create',
+        'edit' => 'can:customers.edit',
+        'update' => 'can:customers.edit',
+        'destroy' => 'can:customers.delete',
+    ]);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Product Master & Catalog
-    |--------------------------------------------------------------------------
-    */
-    Route::resource('products', ProductController::class);
-
+    /* ================= Products & Masters ================= */
 
     Route::post('/categories/bulk-action', [CategoryController::class, 'bulkAction'])
-    ->name('categories.bulkAction');
-
-
-    Route::resource('categories', CategoryController::class);
+        ->middleware('can:categories.delete')->name('categories.bulkAction');
+    Route::resource('categories', CategoryController::class)->middleware('can:categories.view');
 
     Route::post('subcategories/bulk-action', [SubCategoryController::class, 'bulkAction'])
-     ->name('subcategories.bulkAction');
+        ->middleware('can:subcategories.delete')->name('subcategories.bulkAction');
+    Route::resource('subcategories', SubCategoryController::class)->middleware('can:subcategories.view');
 
-    Route::resource('subcategories', SubCategoryController::class);
-    Route::resource('brands', BrandController::class);
-    Route::resource('units', UnitController::class);
-    Route::resource('crops', CropController::class);
-    Route::resource('seasons', SeasonController::class);
+    Route::resource('products', ProductController::class)->middleware('can:products.view');
+    Route::resource('brands', BrandController::class)->middleware('can:brands.view');
+    Route::resource('units', UnitController::class)->middleware('can:units.view');
+    Route::resource('crops', CropController::class)->middleware('can:crops.view');
+    Route::resource('seasons', SeasonController::class)->middleware('can:seasons.view');
 
     Route::post('product-variants/bulk-action', [ProductVariantController::class, 'bulkAction'])
-    ->name('product-variants.bulkAction');
+        ->middleware('can:product-variants.delete')->name('product-variants.bulkAction');
+    Route::post('product-variants/{id}/restore', [ProductVariantController::class, 'restore'])
+        ->middleware('can:product-variants.edit')->name('product-variants.restore');
+    Route::resource('product-variants', ProductVariantController::class)->middleware('can:product-variants.view');
 
-Route::post('product-variants/{id}/restore', [ProductVariantController::class, 'restore'])
-    ->name('product-variants.restore');
+    Route::resource('product-attributes', ProductAttributeController::class)->middleware('can:product-attributes.view');
+    Route::resource('product-images', ProductImageController::class)->middleware('can:product-images.view');
+    Route::resource('product-tags', ProductTagController::class)->middleware('can:product-tags.view');
+    Route::resource('batch-lots', BatchLotController::class)->middleware('can:batch-lots.view');
+    Route::resource('expiries', ExpiryController::class)->middleware('can:expiries.view');
+    Route::resource('certifications', CertificationController::class)->middleware('can:certifications.view');
 
-    Route::resource('product-variants', ProductVariantController::class);
-    Route::resource('product-attributes', ProductAttributeController::class);
-    Route::resource('product-images', ProductImageController::class);
-    Route::resource('product-tags', ProductTagController::class);
-
-    Route::resource('batch-lots', BatchLotController::class);
-    Route::resource('expiries', ExpiryController::class);
-    Route::resource('certifications', CertificationController::class);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Reports & Analytics
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('reports')->name('reports.')->group(function () {
+    /* ================= Reports ================= */
+    Route::prefix('reports')->name('reports.')->middleware('can:reports-sales.view')->group(function () {
         Route::get('sales', [ReportController::class, 'sales'])->name('sales');
         Route::get('customers', [ReportController::class, 'customers'])->name('customers');
 
@@ -192,31 +194,20 @@ Route::post('product-variants/{id}/restore', [ProductVariantController::class, '
         });
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Marketing
-    |--------------------------------------------------------------------------
-    */
-    Route::resource('coupons', CouponController::class);
-    Route::resource('campaigns', CampaignController::class);
+    /* ================= Marketing ================= */
+    Route::resource('coupons', CouponController::class)->middleware('can:coupons.view');
+    Route::resource('campaigns', CampaignController::class)->middleware('can:campaigns.view');
 
-    /*
-    |--------------------------------------------------------------------------
-    | System & Access Control
-    |--------------------------------------------------------------------------
-    */
-
+    /* ================= System ================= */
     Route::post('users/bulk-action', [UserController::class, 'bulkAction'])
-    ->name('users.bulkAction');
-
+        ->middleware('can:users.edit')->name('users.bulkAction');
     Route::post('users/{id}/restore', [UserController::class, 'restore'])
-    ->name('users.restore');
+        ->middleware('can:users.edit')->name('users.restore');
+    Route::resource('users', UserController::class)->middleware('can:users.view');
 
-    Route::resource('users', UserController::class);
-
-    Route::post('roles/bulk-action', [RoleController::class, 'bulkAction'])->name('roles.bulkAction');
-
-    Route::resource('roles', RoleController::class);
+    Route::post('roles/bulk-action', [RoleController::class, 'bulkAction'])
+        ->middleware('can:roles.edit')->name('roles.bulkAction');
+    Route::resource('roles', RoleController::class)->middleware('can:roles.view');
 });
 
 require __DIR__ . '/auth.php';

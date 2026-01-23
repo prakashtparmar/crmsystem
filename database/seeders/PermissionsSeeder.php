@@ -54,6 +54,7 @@ class PermissionsSeeder extends Seeder
             'settings-appearance',
         ];
 
+        // Base CRUD permissions
         $actions = ['view', 'create', 'edit', 'delete'];
 
         foreach ($modules as $module) {
@@ -63,6 +64,32 @@ class PermissionsSeeder extends Seeder
                     'guard_name' => 'web',
                 ]);
             }
+        }
+
+        /**
+         * Scoped (Own vs All) permissions
+         * Only for modules where data ownership matters
+         */
+        $scopedModules = [
+            'orders',
+            'customers',
+            'campaigns',
+            'inventory',
+            'reports',
+            'invoices',
+            'shipments',
+        ];
+
+        foreach ($scopedModules as $module) {
+            Permission::firstOrCreate([
+                'name' => "{$module}.view_all",
+                'guard_name' => 'web',
+            ]);
+
+            Permission::firstOrCreate([
+                'name' => "{$module}.view_own",
+                'guard_name' => 'web',
+            ]);
         }
     }
 }
