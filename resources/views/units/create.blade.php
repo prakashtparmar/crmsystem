@@ -51,13 +51,6 @@
                             />
 
                             <x-forms.input
-                                label="Slug"
-                                name="slug"
-                                type="text"
-                                value="{{ old('slug') }}"
-                            />
-
-                            <x-forms.input
                                 label="Symbol"
                                 name="symbol"
                                 type="text"

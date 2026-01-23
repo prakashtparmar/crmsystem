@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Unit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class UnitController extends Controller
 {
@@ -31,9 +32,13 @@ class UnitController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'   => 'required|string|max:255',
-            'symbol' => 'nullable|string|max:50',
+            'name'      => 'required|string|max:255',
+            'symbol'    => 'nullable|string|max:50',
+            'is_active' => 'nullable|boolean',
         ]);
+
+        // Auto-generate slug from name
+        $data['slug'] = Str::slug($data['name']);
 
         Unit::create($data);
 
@@ -64,9 +69,13 @@ class UnitController extends Controller
     public function update(Request $request, Unit $unit)
     {
         $data = $request->validate([
-            'name'   => 'required|string|max:255',
-            'symbol' => 'nullable|string|max:50',
+            'name'      => 'required|string|max:255',
+            'symbol'    => 'nullable|string|max:50',
+            'is_active' => 'nullable|boolean',
         ]);
+
+        // Regenerate slug when name changes
+        $data['slug'] = Str::slug($data['name']);
 
         $unit->update($data);
 
