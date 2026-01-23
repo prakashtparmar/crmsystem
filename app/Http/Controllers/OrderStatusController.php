@@ -15,23 +15,23 @@ class OrderStatusController extends Controller
      * Allowed state transitions
      */
     protected array $transitions = [
-        'draft'      => ['confirmed', 'cancelled'],
-        'confirmed'  => ['processing', 'shipped', 'cancelled'],
+        'draft' => ['confirmed', 'cancelled'],
+        'confirmed' => ['processing', 'shipped', 'cancelled'],
         'processing' => ['shipped', 'cancelled'],
-        'shipped'    => ['delivered'],
-        'delivered'  => [],
-        'cancelled'  => [],
+        'shipped' => ['delivered'],
+        'delivered' => [],
+        'cancelled' => [],
     ];
 
     public function update(Request $request, Order $order, InventoryService $inventory)
     {
         $data = $request->validate([
-            'status'  => 'required|string',
+            'status' => 'required|string',
             'remarks' => 'nullable|string|max:1000',
         ]);
 
         $from = $order->status;
-        $to   = $data['status'];
+        $to = $data['status'];
 
         // Idempotent: no-op if same status
         if ($from === $to) {
@@ -39,7 +39,7 @@ class OrderStatusController extends Controller
         }
 
         // Validate transition
-        if (! in_array($to, $this->transitions[$from] ?? [], true)) {
+        if (!in_array($to, $this->transitions[$from] ?? [], true)) {
             throw ValidationException::withMessages([
                 'status' => "Invalid status transition: {$from} → {$to}",
             ]);
@@ -104,8 +104,8 @@ class OrderStatusController extends Controller
 
                 if ($shipment) {
                     $shipment->update([
-                        'status'           => 'delivered',
-                        'delivered_at'     => now(),
+                        'status' => 'delivered',
+                        'delivered_at' => now(),
                         'address_snapshot' => $shipment->address_snapshot
                             ?: $order->shipping_address,
                     ]);
@@ -120,33 +120,33 @@ class OrderStatusController extends Controller
             // ]);
 
             $order->update([
-    'status'     => $to,
-    'updated_by' => auth()->id(),
+                'status' => $to,
+                'updated_by' => auth()->id(),
 
-    // Set once, never clear
-    'confirmed_at' => $to === 'confirmed'
-        ? now()
-        : $order->confirmed_at,
+                // Set once, never clear
+                'confirmed_at' => $to === 'confirmed'
+                    ? now()
+                    : $order->confirmed_at,
 
-    'cancelled_at' => $to === 'cancelled'
-        ? now()
-        : $order->cancelled_at,
+                'cancelled_at' => $to === 'cancelled'
+                    ? now()
+                    : $order->cancelled_at,
 
-    'completed_at' => $to === 'delivered'
-        ? now()
-        : $order->completed_at,
-]);
+                'completed_at' => $to === 'delivered'
+                    ? now()
+                    : $order->completed_at,
+            ]);
 
 
 
             // Log status change
             OrderStatusLog::create([
-                'order_id'    => $order->id,
+                'order_id' => $order->id,
                 'from_status' => $from,
-                'to_status'   => $to,
-                'remarks'     => $data['remarks'] ?? null,
-                'changed_by'  => auth()->id(),
-                'changed_at'  => now(),
+                'to_status' => $to,
+                'remarks' => $data['remarks'] ?? null,
+                'changed_by' => auth()->id(),
+                'changed_at' => now(),
             ]);
         });
 

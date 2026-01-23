@@ -24,10 +24,12 @@ class DashboardController extends Controller
             );
 
         // Core totals
-        $totalUsers   = User::count(); // global
-        $totalOrders  = (clone $orderQuery)->count();
+        $totalUsers  = User::count(); // global
+        $totalOrders = (clone $orderQuery)->count();
+
+        // Revenue: include all except cancelled & draft
         $totalRevenue = (clone $orderQuery)
-            ->where('status', 'delivered')
+            ->whereIn('status', ['confirmed', 'processing', 'shipped', 'delivered'])
             ->sum('grand_total');
 
         // Visitors (until you implement tracking)
@@ -42,7 +44,7 @@ class DashboardController extends Controller
                 ->count(),
 
             'revenue' => (clone $orderQuery)
-                ->where('status', 'delivered')
+                ->whereIn('status', ['confirmed', 'processing', 'shipped', 'delivered'])
                 ->where('created_at', '>=', Carbon::now()->startOfWeek())
                 ->sum('grand_total'),
         ];
@@ -61,11 +63,12 @@ class DashboardController extends Controller
                 ])->count(),
 
             'revenue' => (clone $orderQuery)
-                ->where('status', 'delivered')
+                ->whereIn('status', ['confirmed', 'processing', 'shipped', 'delivered'])
                 ->whereBetween('created_at', [
                     Carbon::now()->subWeek()->startOfWeek(),
                     Carbon::now()->subWeek()->endOfWeek(),
-                ])->sum('grand_total'),
+                ])
+                ->sum('grand_total'),
         ];
 
         /* -----------------------------------------------------------------
