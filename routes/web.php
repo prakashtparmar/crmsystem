@@ -34,6 +34,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\OrderReturnController;
 
 /*
 |--------------------------------------------------------------------------
@@ -104,6 +105,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('orders.payments.bulk.process');
 
 
+
+
+
+
+
+
+    /* ================= Order Returns ================= */
+
+    Route::post('order-returns/bulk-action', [OrderReturnController::class, 'bulkAction'])
+        ->middleware('can:order-returns.edit')
+        ->name('order-returns.bulkAction');
+
+    Route::post('order-returns/{orderReturn}/approve', [OrderReturnController::class, 'approve'])
+        ->middleware('can:order-returns.edit')
+        ->name('order-returns.approve');
+
+    Route::post('order-returns/{orderReturn}/reject', [OrderReturnController::class, 'reject'])
+        ->middleware('can:order-returns.edit')
+        ->name('order-returns.reject');
+
+    Route::post('order-returns/{orderReturn}/refund', [OrderReturnController::class, 'refund'])
+        ->middleware('can:order-returns.edit')
+        ->name('order-returns.refund');
+
+    Route::resource('order-returns', OrderReturnController::class)
+        ->middleware(['auth', 'verified']);
 
 
 

@@ -23,27 +23,27 @@ class SetupSeeder extends Seeder
         */
 
         $modules = [
-    // System
-    'users', 'roles', 'dashboard',
+            // System
+            'users', 'roles', 'dashboard',
 
-    // Commerce
-    'customers', 'orders', 'products', 'inventory',
-    'cart', 'checkout', 'invoices', 'shipments',
+            // E-Commerce / Commerce
+            'customers', 'orders', 'order-returns', 'products', 'inventory',
+            'cart', 'checkout', 'invoices', 'shipments',
 
-    // Masters
-    'categories', 'subcategories', 'brands', 'units', 'crops', 'seasons',
-    'product-variants', 'product-attributes', 'product-images', 'product-tags',
-    'batch-lots', 'expiries', 'certifications',
+            // Masters
+            'categories', 'subcategories', 'brands', 'units', 'crops', 'seasons',
+            'product-variants', 'product-attributes', 'product-images', 'product-tags',
+            'batch-lots', 'expiries', 'certifications',
 
-    // Marketing
-    'coupons', 'campaigns',
+            // Marketing
+            'coupons', 'campaigns',
 
-    // Reports
-    'reports-sales', 'reports-customers', 'reports-performance', 'reports-conversion',
+            // Reports
+            'reports-sales', 'reports-customers', 'reports-performance', 'reports-conversion',
 
-    // Settings
-    'settings-profile', 'settings-password', 'settings-appearance',
-];
+            // Settings
+            'settings-profile', 'settings-password', 'settings-appearance',
+        ];
 
         $actions = ['view', 'create', 'edit', 'delete'];
 
@@ -58,7 +58,7 @@ class SetupSeeder extends Seeder
 
         // Scoped permissions
         $scopedModules = [
-            'orders', 'customers', 'campaigns', 'inventory', 'reports', 'invoices', 'shipments',
+            'orders', 'order-returns', 'customers', 'campaigns', 'inventory', 'reports', 'invoices', 'shipments',
         ];
 
         foreach ($scopedModules as $module) {

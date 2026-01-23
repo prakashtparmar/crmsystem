@@ -15,18 +15,20 @@
                     Dashboard
                 </x-layouts.sidebar-link>
 
-                <!-- Commerce -->
+                <!-- E-Commerce -->
                 @canany([
-                    'customers.view','orders.view','products.view','inventory.view',
+                    'customers.view','orders.view','order-returns.view',
+                    'products.view','inventory.view',
                     'categories.view','subcategories.view','brands.view','units.view',
                     'crops.view','seasons.view','product-variants.view','product-attributes.view',
                     'product-images.view','product-tags.view','batch-lots.view','expiries.view','certifications.view'
                 ])
                 <x-layouts.sidebar-two-level-link-parent
-                    title="Commerce"
+                    title="E-Commerce"
                     icon="fas-shopping-cart"
                     :active="
                         request()->routeIs('orders*') ||
+                        request()->routeIs('order-returns*') ||
                         request()->routeIs('customers*') ||
                         request()->routeIs('products*') ||
                         request()->routeIs('inventory*') ||
@@ -45,10 +47,10 @@
                         request()->routeIs('certifications*')
                     ">
 
-                    {{-- CUSTOMER --}}
+                    {{-- CUSTOMERS --}}
                     @can('customers.view')
                     <div class="px-3 mt-2 text-xs font-semibold uppercase text-gray-400">
-                        Customer
+                        Customers
                     </div>
 
                     <x-layouts.sidebar-two-level-link
@@ -60,16 +62,27 @@
                     @endcan
 
                     {{-- ORDERS --}}
-                    @can('orders.view')
+                    @canany(['orders.view','order-returns.view'])
                     <div class="px-3 mt-3 text-xs font-semibold uppercase text-gray-400">
                         Orders
                     </div>
+                    @endcanany
 
+                    @can('orders.view')
                     <x-layouts.sidebar-two-level-link
                         href="{{ route('orders.index') }}"
                         icon="fas-receipt"
                         :active="request()->routeIs('orders*')">
                         Orders
+                    </x-layouts.sidebar-two-level-link>
+                    @endcan
+
+                    @can('order-returns.view')
+                    <x-layouts.sidebar-two-level-link
+                        href="{{ route('order-returns.index') }}"
+                        icon="fas-undo"
+                        :active="request()->routeIs('order-returns*')">
+                        Order Returns
                     </x-layouts.sidebar-two-level-link>
                     @endcan
 
@@ -98,14 +111,14 @@
                     </x-layouts.sidebar-two-level-link>
                     @endcan
 
-                    {{-- MASTERS --}}
+                    {{-- PRODUCT MASTERS --}}
                     @canany([
                         'categories.view','subcategories.view','brands.view','units.view',
                         'crops.view','seasons.view','product-variants.view','product-attributes.view',
                         'product-images.view','product-tags.view','batch-lots.view','expiries.view','certifications.view'
                     ])
                     <div class="px-3 mt-3 text-xs font-semibold uppercase text-gray-400">
-                        Masters
+                        Product Masters
                     </div>
                     @endcanany
 
