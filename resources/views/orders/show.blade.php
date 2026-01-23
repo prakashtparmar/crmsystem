@@ -240,6 +240,22 @@
 
             <!-- CONTROL RAIL -->
 
+<!-- Bulk Payments -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-5">
+    <h3 class="text-[11px] font-semibold uppercase tracking-wider mb-2 text-gray-600 dark:text-gray-300">
+        Bulk Payments
+    </h3>
+
+    <p class="text-[11px] text-gray-500 mb-3">
+        Upload an Excel/CSV file to apply payments to multiple orders using Order ID.
+    </p>
+
+    <a href="{{ route('orders.payments.bulk.form') }}"
+        class="block w-full text-center px-3 py-2 text-xs rounded-md border hover:bg-gray-100 dark:hover:bg-gray-700">
+        Upload Excel Sheet
+    </a>
+</div>
+
             <!-- Status -->
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-5">
                 <h3 class="text-[11px] font-semibold uppercase tracking-wider mb-3 text-gray-600 dark:text-gray-300">

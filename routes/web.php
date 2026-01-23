@@ -40,7 +40,7 @@ use App\Http\Controllers\CheckoutController;
 | Public Routes
 |--------------------------------------------------------------------------
 */
-Route::get('/', fn () => redirect()->route('login'));
+Route::get('/', fn() => redirect()->route('login'));
 
 /*
 |--------------------------------------------------------------------------
@@ -94,6 +94,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('can:orders.edit')->name('orders.status.update');
     Route::post('orders/{order}/payments', [PaymentController::class, 'store'])
         ->middleware('can:orders.edit')->name('orders.payments.store');
+
+    Route::get('orders/payments/bulk', [PaymentController::class, 'bulkForm'])
+        ->middleware('can:orders.edit')
+        ->name('orders.payments.bulk.form');
+
+    Route::post('orders/payments/bulk', [PaymentController::class, 'bulkProcess'])
+        ->middleware('can:orders.edit')
+        ->name('orders.payments.bulk.process');
+
+
+
+
+
+
     Route::post('orders/{order}/shipments', [ShipmentController::class, 'store'])
         ->middleware('can:shipments.create')->name('orders.shipments.store');
     Route::post('orders/{order}/invoice', [InvoiceController::class, 'store'])
@@ -103,6 +117,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('can:invoices.view')->name('orders.invoice.download');
     Route::get('orders/{order}/invoice/print', [InvoiceController::class, 'print'])
         ->middleware('can:invoices.view')->name('orders.invoice.print');
+
+
 
     /* ================= Cart & Checkout ================= */
     Route::post('cart/add', [CartController::class, 'add'])

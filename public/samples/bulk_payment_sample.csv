@@ -1,0 +1,4 @@
+order_code,amount,method,paid_at,reference
+ORD-20260123-151230,500,cash,2026-01-25,Counter payment
+ORD-20260124-091015,1200,upi,2026-01-25,GPay TXN 548796
+ORD-20260124-113300,800,bank_transfer,2026-01-26,HDFC NEFT
