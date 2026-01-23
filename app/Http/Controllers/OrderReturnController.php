@@ -11,19 +11,23 @@ use Illuminate\Support\Facades\DB;
 class OrderReturnController extends Controller
 {
     public function index(Request $request)
-    {
-        $showTrashed = (bool) $request->get('trash', false);
+{
+    $showTrashed = (bool) $request->get('trash', false);
 
-        $query = OrderReturn::with(['order', 'items.orderItem'])->latest();
+    $query = OrderReturn::with([
+        'order.customer',
+        'items.orderItem',
+    ])->latest();
 
-        if ($showTrashed) {
-            $query->onlyTrashed();
-        }
-
-        $returns = $query->paginate(20);
-
-        return view('order-returns.index', compact('returns', 'showTrashed'));
+    if ($showTrashed) {
+        $query = $query->onlyTrashed();
     }
+
+    $returns = $query->paginate(20);
+
+    return view('order-returns.index', compact('returns', 'showTrashed'));
+}
+
 
     public function create(Request $request)
     {
@@ -32,48 +36,52 @@ class OrderReturnController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'order_id' => 'required|exists:orders,id',
-            'items'    => 'required|array',
+{
+    $request->validate([
+        'order_id' => 'required|exists:orders,id',
+        'items'    => 'required|array',
+    ]);
+
+    DB::transaction(function () use ($request) {
+
+        $return = OrderReturn::create([
+            'order_id'      => $request->order_id,
+            'user_id'       => auth()->id(),
+            'return_number' => 'RET-' . now()->format('YmdHis'),
+            'reason'        => $request->reason,
+            'status'        => 'pending',
         ]);
 
-        DB::transaction(function () use ($request) {
+        $refund = 0;
 
-            $return = OrderReturn::create([
-                'order_id'      => $request->order_id,
-                'user_id'       => auth()->id(),
-                'return_number' => 'RET-' . now()->format('YmdHis'),
-                'reason'        => $request->reason,
-                'status'        => 'pending',
-            ]);
+        // FIXED LOOP
+        foreach ($request->items as $itemId => $row) {
+            $qty = (int) ($row['qty'] ?? 0);
 
-            $refund = 0;
-
-            foreach ($request->items as $itemId => $qty) {
-                if ($qty <= 0) {
-                    continue;
-                }
-
-                $item = OrderItem::findOrFail($itemId);
-                $amount = $item->price * $qty;
-
-                $return->items()->create([
-                    'order_item_id' => $itemId,
-                    'qty'           => $qty,
-                    'amount'        => $amount,
-                ]);
-
-                $refund += $amount;
+            if ($qty <= 0) {
+                continue;
             }
 
-            $return->update(['refund_amount' => $refund]);
-        });
+            $item = OrderItem::findOrFail($itemId);
+            $amount = $item->price * $qty;
 
-        return redirect()
-            ->route('order-returns.index')
-            ->with('success', 'Order return created successfully.');
-    }
+            $return->items()->create([
+                'order_item_id' => $itemId,
+                'qty'           => $qty,
+                'amount'        => $amount,
+            ]);
+
+            $refund += $amount;
+        }
+
+        $return->update(['refund_amount' => $refund]);
+    });
+
+    return redirect()
+        ->route('order-returns.index')
+        ->with('success', 'Order return created successfully.');
+}
+
 
     public function bulkAction(Request $request)
     {
