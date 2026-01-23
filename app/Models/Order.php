@@ -32,6 +32,8 @@ class Order extends Model
         'cancelled_at' => 'datetime',
     ];
 
+    /* ---------------- Relations ---------------- */
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);
@@ -73,5 +75,19 @@ class Order extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /* ---------------- Helpers ---------------- */
+
+    public function getTotalPaidAttribute()
+    {
+        return $this->payments()
+            ->where('status', 'completed')
+            ->sum('amount');
+    }
+
+    public function getBalanceAttribute()
+    {
+        return max(0, $this->grand_total - $this->total_paid);
     }
 }

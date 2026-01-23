@@ -20,7 +20,7 @@ return new class extends Migration {
             $table->enum('status', ['pending','completed','failed'])->default('completed');
 
             $table->foreignId('received_by')->nullable()->constrained('users')->nullOnDelete();
-$table->decimal('balance_after', 12, 2)->nullable();
+            $table->decimal('balance_after', 12, 2)->nullable();
 
             $table->timestamps();
 
