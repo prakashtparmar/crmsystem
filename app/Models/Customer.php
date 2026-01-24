@@ -15,10 +15,17 @@ class Customer extends Model
 
         // Identity
         'first_name',
+        'middle_name',
         'last_name',
         'display_name',
         'mobile',
         'email',
+
+        // Extra Contacts
+        'phone_number_2',
+        'relative_phone',
+        'secondary_contact_name',
+        'secondary_contact_phone',
 
         // Classification
         'type',
@@ -28,8 +35,13 @@ class Customer extends Model
         'company_name',
         'gst_number',
         'pan_number',
+        'business_type',
+        'registration_number',
+        'website',
+        'established_year',
+        'annual_turnover',
 
-        // Legacy Address (kept for backward compatibility)
+        // Address (Legacy / Primary)
         'address_line1',
         'address_line2',
         'village',
@@ -38,6 +50,7 @@ class Customer extends Model
         'state',
         'country',
         'pincode',
+        'post_office',
         'latitude',
         'longitude',
 
@@ -47,11 +60,36 @@ class Customer extends Model
         'primary_crops',
         'secondary_crops',
         'irrigation_type',
+        'farming_method',
+        'soil_type',
 
         // Finance
         'credit_limit',
         'outstanding_balance',
         'credit_valid_till',
+        'payment_terms',
+        'preferred_payment_mode',
+        'bank_name',
+        'account_number',
+        'ifsc_code',
+        'billing_cycle',
+
+        // References
+        'referred_by',
+        'reference_type',
+        'reference_name',
+        'reference_phone',
+        'reference_notes',
+
+        // Location / Routing
+        'region',
+        'area',
+        'route',
+        'beat',
+        'territory',
+        'zone',
+        'sales_person',
+        'warehouse',
 
         // KYC
         'aadhaar_last4',
@@ -78,6 +116,7 @@ class Customer extends Model
         'secondary_crops'     => 'array',
         'credit_limit'        => 'decimal:2',
         'outstanding_balance' => 'decimal:2',
+        'annual_turnover'     => 'decimal:2',
         'kyc_completed'       => 'boolean',
         'is_active'           => 'boolean',
         'is_blacklisted'      => 'boolean',

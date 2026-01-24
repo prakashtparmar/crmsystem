@@ -22,27 +22,37 @@ class OrderController extends Controller
     }
 
     public function index()
-    {
-        $user = auth()->user();
+{
+    $user = auth()->user();
 
+    $isSuperAdmin = $user->hasRole('Master Admin');
+
+    // Only non–super-admin users are checked for permissions
+    if (! $isSuperAdmin) {
         abort_unless(
             $user->can('orders.view') ||
             $user->can('orders.view_all') ||
             $user->can('orders.view_own'),
             403
         );
-
-        $orders = Order::with(['customer', 'creator', 'invoice', 'shipments'])
-            ->withSum('payments as total_paid', 'amount')
-            ->when(
-                $user->can('orders.view_own') && ! $user->can('orders.view_all'),
-                fn ($q) => $q->where('created_by', $user->id)
-            )
-            ->latest()
-            ->paginate(20);
-
-        return view('orders.index', compact('orders'));
     }
+
+    $orders = Order::with(['customer', 'creator', 'invoice', 'shipments'])
+        ->withSum('payments as total_paid', 'amount')
+        ->when(
+            // Restrict ONLY when:
+            // - user is NOT super admin
+            // - and user does NOT have view_all
+            ! $isSuperAdmin && ! $user->can('orders.view_all'),
+            fn ($q) => $q->where('created_by', $user->id)
+        )
+        ->latest()->get();
+
+
+    return view('orders.index', compact('orders'));
+}
+
+
 
     public function create()
     {

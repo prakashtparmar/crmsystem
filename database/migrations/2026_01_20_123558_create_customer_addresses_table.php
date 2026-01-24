@@ -32,6 +32,18 @@ return new class extends Migration
             $table->string('country')->default('India');
             $table->string('pincode', 10)->nullable()->index();
 
+            // Extra Address (UI)
+            $table->string('post_office')->nullable();
+
+            // Location / Routing (UI)
+            $table->string('region')->nullable();
+            $table->string('area')->nullable();
+            $table->string('route')->nullable();
+            $table->string('beat')->nullable();
+            $table->string('territory')->nullable();
+            $table->string('zone')->nullable();
+            $table->string('warehouse')->nullable();
+
             // Geo
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();

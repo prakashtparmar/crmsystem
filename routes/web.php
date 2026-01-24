@@ -20,7 +20,14 @@ use App\Http\Controllers\BatchLotController;
 use App\Http\Controllers\ExpiryController;
 use App\Http\Controllers\CertificationController;
 use App\Http\Controllers\InventoryController;
-use App\Http\Controllers\CustomerController;
+// use App\Http\Controllers\CustomerController; temprory removed
+use App\Http\Controllers\Customers\CustomerController;
+use App\Http\Controllers\Customers\CustomerSearchController;
+use App\Http\Controllers\Customers\CustomerAddressController;
+use App\Http\Controllers\AddressLookupController;
+
+
+
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\CampaignController;
@@ -59,6 +66,12 @@ Route::get('dashboard', DashboardController::class)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
+
+
+    // 🔽 ADD THIS HERE
+    Route::get('address-lookup', [AddressLookupController::class, 'lookup'])
+        ->name('address.lookup');
+
 
     /* ================= Settings ================= */
     Route::get('settings/profile', [Settings\ProfileController::class, 'edit'])
@@ -205,15 +218,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ]);
 
     /* ================= Customers ================= */
-    Route::get('customers/search', [CustomerController::class, 'search'])
+    // Route::get('customers/search', [CustomerController::class, 'search'])
+    //     ->middleware('can:customers.search')
+    //     ->name('customers.search');
+
+    // Route::get('customers/{customer}/addresses', [CustomerController::class, 'addresses'])
+    //     ->middleware('can:customers.view')
+    //     ->name('customers.addresses');
+
+    // Route::resource('customers', CustomerController::class);
+
+    /* ================= Customers ================= */
+
+    // Search
+    Route::get('customers/search', [CustomerSearchController::class, 'search'])
         ->middleware('can:customers.search')
         ->name('customers.search');
 
-    Route::get('customers/{customer}/addresses', [CustomerController::class, 'addresses'])
+    // Addresses API (for Orders UI)
+    Route::get('customers/{customer}/addresses', [CustomerAddressController::class, 'addresses'])
         ->middleware('can:customers.view')
         ->name('customers.addresses');
 
+    // CRUD
     Route::resource('customers', CustomerController::class);
+
 
 
     /* ================= Products & Masters ================= */
@@ -273,8 +302,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     Route::resource('warehouses', WarehouseController::class);
-Route::patch('warehouses/{warehouse}/toggle', [WarehouseController::class, 'toggle'])
-    ->name('warehouses.toggle');
+    Route::patch('warehouses/{warehouse}/toggle', [WarehouseController::class, 'toggle'])
+        ->name('warehouses.toggle');
 
 });
 

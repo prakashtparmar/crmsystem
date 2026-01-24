@@ -11,11 +11,15 @@ class CustomerAddress extends Model
 
     protected $fillable = [
         'customer_id',
-        'type',          // billing | shipping | other
+        'type',          // billing | shipping | both
         'is_default',
         'label',         // Home, Office, Farm, Warehouse, etc.
+
+        // Contact
         'contact_name',
         'contact_phone',
+
+        // Address
         'address_line1',
         'address_line2',
         'village',
@@ -24,6 +28,18 @@ class CustomerAddress extends Model
         'state',
         'country',
         'pincode',
+        'post_office',
+
+        // Location / Routing
+        'region',
+        'area',
+        'route',
+        'beat',
+        'territory',
+        'zone',
+        'warehouse',
+
+        // Geo
         'latitude',
         'longitude',
     ];

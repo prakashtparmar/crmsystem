@@ -16,11 +16,17 @@ return new class extends Migration
             $table->string('customer_code')->unique(); // CUST-000001
 
             // Identity
-            $table->string('first_name');
+            $table->string('first_name')->nullable();
+            $table->string('middle_name')->nullable();
+
             $table->string('last_name')->nullable();
             $table->string('display_name')->nullable();
             $table->string('mobile', 20)->unique();
             $table->string('email')->nullable()->index();
+
+            // Extra Contacts (UI)
+            $table->string('phone_number_2')->nullable();
+            $table->string('relative_phone')->nullable();
 
             // Classification
             $table->enum('type', ['farmer', 'buyer', 'vendor', 'dealer'])->default('farmer');
@@ -30,6 +36,13 @@ return new class extends Migration
             $table->string('company_name')->nullable();
             $table->string('gst_number')->nullable()->index();
             $table->string('pan_number')->nullable();
+
+            // Extra Business (UI)
+            $table->string('business_type')->nullable();
+            $table->string('registration_number')->nullable();
+            $table->string('website')->nullable();
+            $table->year('established_year')->nullable();
+            $table->decimal('annual_turnover', 14, 2)->nullable();
 
             // Address (Primary)
             $table->string('address_line1')->nullable();
@@ -43,6 +56,9 @@ return new class extends Migration
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
 
+            // Address Extra (UI)
+            $table->string('post_office')->nullable();
+
             // Agriculture Profile
             $table->decimal('land_area', 10, 2)->nullable();
             $table->string('land_unit')->default('acre');
@@ -50,10 +66,41 @@ return new class extends Migration
             $table->json('secondary_crops')->nullable();
             $table->string('irrigation_type')->nullable(); // borewell, canal, rainfed
 
+            // Agriculture Extra (UI)
+            $table->string('farming_method')->nullable();
+            $table->string('soil_type')->nullable();
+
             // Financial / Credit
             $table->decimal('credit_limit', 12, 2)->default(0);
             $table->decimal('outstanding_balance', 12, 2)->default(0);
             $table->date('credit_valid_till')->nullable();
+
+            // Financial Extra (UI)
+            $table->integer('payment_terms')->nullable();
+            $table->string('preferred_payment_mode')->nullable();
+            $table->string('bank_name')->nullable();
+            $table->string('account_number')->nullable();
+            $table->string('ifsc_code')->nullable();
+            $table->string('billing_cycle')->nullable();
+
+            // Reference / Contacts (UI)
+            $table->string('referred_by')->nullable();
+            $table->string('reference_type')->nullable();
+            $table->string('reference_name')->nullable();
+            $table->string('reference_phone')->nullable();
+            $table->string('secondary_contact_name')->nullable();
+            $table->string('secondary_contact_phone')->nullable();
+            $table->text('reference_notes')->nullable();
+
+            // Location / Routing (UI)
+            $table->string('region')->nullable();
+            $table->string('area')->nullable();
+            $table->string('route')->nullable();
+            $table->string('beat')->nullable();
+            $table->string('territory')->nullable();
+            $table->string('zone')->nullable();
+            $table->string('sales_person')->nullable();
+            $table->string('warehouse')->nullable();
 
             // KYC & Compliance
             $table->string('aadhaar_last4')->nullable();
