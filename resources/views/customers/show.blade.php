@@ -544,149 +544,90 @@
             </div>
          </div>
       </div>
-      <!-- Order History -->
-      <div
-         class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-               Order History
-            </h3>
-            <button id="toggleOrders"
-               class="text-xs px-3 py-1 rounded-md border text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+     <!-- Order History -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+            Order History
+        </h3>
+        <button id="toggleOrders"
+            class="text-xs px-3 py-1 rounded-md border text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
             Hide Orders
-            </button>
-         </div>
-         <div id="ordersSection">
-            @if ($orders->count())
-            <div class="overflow-x-auto">
-               <table id="ordersTable" class="w-full text-sm">
-                  <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
-                     <tr>
-                        <th class="px-3 py-2 text-center w-10">
-                           <input type="checkbox" id="selectAll">
-                        </th>
+        </button>
+    </div>
+
+    <div id="ordersSection">
+        @if ($orders->count())
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
+                    <tr>
                         <th class="px-3 py-2">ID</th>
-                        <th class="px-3 py-2">UUID</th>
                         <th class="px-3 py-2">Order Code</th>
                         <th class="px-3 py-2">Customer</th>
-                        <th class="px-3 py-2">Email</th>
-                        <th class="px-3 py-2">Phone</th>
                         <th class="px-3 py-2">Order Date</th>
-                        <th class="px-3 py-2">Created At</th>
-                        <th class="px-3 py-2">Updated At</th>
-                        <th class="px-3 py-2">Expected</th>
-                        <th class="px-3 py-2">Sub Total</th>
-                        <th class="px-3 py-2">Tax</th>
-                        <th class="px-3 py-2">Shipping</th>
-                        <th class="px-3 py-2">Discount</th>
                         <th class="px-3 py-2">Grand Total</th>
                         <th class="px-3 py-2">Status</th>
-                        <th class="px-3 py-2">Payment</th>
-                        <th class="px-3 py-2">Method</th>
-                        <th class="px-3 py-2">Transaction</th>
-                        <th class="px-3 py-2">Paid At</th>
-                        <th class="px-3 py-2">Completed</th>
-                        <th class="px-3 py-2">Customer ID</th>
-                        <th class="px-3 py-2">User ID</th>
-                        <th class="px-3 py-2">Billing Address</th>
-                        <th class="px-3 py-2">Shipping Address</th>
-                        <th class="px-3 py-2">Meta</th>
-                        <th class="px-3 py-2">Created By</th>
-                        <th class="px-3 py-2">Updated By</th>
-                        <th class="px-3 py-2">Deleted At</th>
-                        <th class="px-3 py-2 text-right">Action</th>
-                     </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                     @foreach ($orders as $order)
-                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                        <td class="px-3 py-2 text-center">
-                           <input type="checkbox" class="row-checkbox"
-                              value="{{ $order->id }}">
-                        </td>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                @foreach ($orders as $order)
+                    {{-- Order Row --}}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
                         <td class="px-3 py-2 text-gray-500">{{ $order->id }}</td>
-                        <td class="px-3 py-2 text-gray-500">{{ $order->uuid }}</td>
-                        <td class="px-3 py-2 text-gray-500">{{ $order->order_code }}</td>
-                        <td class="px-3 py-2 font-medium text-gray-800 dark:text-gray-100">
-                           {{ $order->customer_name }}
+                        <td class="px-3 py-2">{{ $order->order_code }}</td>
+                        <td class="px-3 py-2">{{ $order->customer_name }}</td>
+                        <td class="px-3 py-2">{{ $order->order_date?->format('d M Y') ?? '—' }}</td>
+                        <td class="px-3 py-2 font-semibold">{{ number_format($order->grand_total, 2) }}</td>
+                        <td class="px-3 py-2 capitalize">{{ ucfirst($order->status) }}</td>
+                    </tr>
+
+                    {{-- Order Items --}}
+                    <tr class="bg-gray-50 dark:bg-gray-800">
+                        <td colspan="6" class="px-6 py-3">
+                            @if($order->items->count())
+                                <table class="w-full text-xs border rounded">
+                                    <thead class="bg-gray-100 dark:bg-gray-700">
+                                        <tr>
+                                            <th class="px-2 py-1 text-left">Product</th>
+                                            <th class="px-2 py-1 text-right">Price</th>
+                                            <th class="px-2 py-1 text-right">Qty</th>
+                                            <th class="px-2 py-1 text-right">Tax</th>
+                                            <th class="px-2 py-1 text-right">Discount</th>
+                                            <th class="px-2 py-1 text-right">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($order->items as $item)
+                                        <tr class="border-t">
+                                            <td class="px-2 py-1">{{ $item->product_name }}</td>
+                                            <td class="px-2 py-1 text-right">{{ number_format($item->price, 2) }}</td>
+                                            <td class="px-2 py-1 text-right">{{ $item->quantity }}</td>
+                                            <td class="px-2 py-1 text-right">{{ number_format($item->tax_amount, 2) }}</td>
+                                            <td class="px-2 py-1 text-right">{{ number_format($item->discount_amount, 2) }}</td>
+                                            <td class="px-2 py-1 text-right font-semibold">{{ number_format($item->total, 2) }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            @else
+                                <div class="text-xs text-gray-500">No items for this order.</div>
+                            @endif
                         </td>
-                        <td class="px-3 py-2">{{ $order->customer_email ?? '—' }}</td>
-                        <td class="px-3 py-2">{{ $order->customer_phone ?? '—' }}</td>
-                        <td class="px-3 py-2 text-gray-500">
-                           {{ $order->order_date?->format('d M Y') ?? '—' }}
-                        </td>
-                        <td class="px-3 py-2 text-gray-500">
-                           {{ $order->created_at?->format('d M Y H:i') ?? '—' }}
-                        </td>
-                        <td class="px-3 py-2 text-gray-500">
-                           {{ $order->updated_at?->format('d M Y H:i') ?? '—' }}
-                        </td>
-                        <td class="px-3 py-2 text-gray-500">
-                           {{ $order->expected_delivery_at?->format('d M Y') ?? '—' }}
-                        </td>
-                        <td class="px-3 py-2">{{ number_format($order->sub_total, 2) }}</td>
-                        <td class="px-3 py-2">{{ number_format($order->tax_amount, 2) }}</td>
-                        <td class="px-3 py-2">{{ number_format($order->shipping_amount, 2) }}</td>
-                        <td class="px-3 py-2">{{ number_format($order->discount_amount, 2) }}</td>
-                        <td class="px-3 py-2 font-semibold">
-                           {{ number_format($order->grand_total, 2) }}
-                        </td>
-                        <td class="px-3 py-2 capitalize">
-                           <span
-                              class="px-2 py-1 text-xs rounded-full
-                              {{ $order->status === 'delivered'
-                              ? 'bg-green-100 text-green-700'
-                              : ($order->status === 'cancelled'
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-yellow-100 text-yellow-700') }}">
-                           {{ ucfirst($order->status) }}
-                           </span>
-                        </td>
-                        <td class="px-3 py-2 capitalize">{{ $order->payment_status }}</td>
-                        <td class="px-3 py-2">{{ $order->payment_method ?? '—' }}</td>
-                        <td class="px-3 py-2">{{ $order->transaction_id ?? '—' }}</td>
-                        <td class="px-3 py-2">{{ $order->paid_at?->format('d M Y H:i') ?? '—' }}
-                        </td>
-                        <td class="px-3 py-2">
-                           {{ $order->completed_at?->format('d M Y H:i') ?? '—' }}
-                        </td>
-                        <td class="px-3 py-2 text-gray-500">{{ $order->customer_id ?? '—' }}</td>
-                        <td class="px-3 py-2 text-gray-500">{{ $order->user_id ?? '—' }}</td>
-                        <td class="px-3 py-2 max-w-xs truncate"
-                           title="{{ $order->billing_address }}">
-                           {{ $order->billing_address ?? '—' }}
-                        </td>
-                        <td class="px-3 py-2 max-w-xs truncate"
-                           title="{{ $order->shipping_address }}">
-                           {{ $order->shipping_address ?? '—' }}
-                        </td>
-                        <td class="px-3 py-2 text-gray-500">
-                           {{ $order->meta ? json_encode($order->meta) : '—' }}
-                        </td>
-                        <td class="px-3 py-2 text-gray-500">
-                           {{ $order->creator?->name ?? '—' }}
-                        </td>
-                        <td class="px-3 py-2 text-gray-500">
-                           {{ $order->updater?->name ?? '—' }}
-                        </td>
-                        <td class="px-3 py-2 text-gray-500">
-                           {{ $order->deleted_at?->format('d M Y H:i') ?? '—' }}
-                        </td>
-                        <td class="px-3 py-2 text-right relative">
-                           <!-- actions unchanged -->
-                        </td>
-                     </tr>
-                     @endforeach
-                  </tbody>
-               </table>
-            </div>
-            @else
-            <div class="text-sm text-gray-500 text-center py-8">
-               No orders found for this customer.
-            </div>
-            @endif
-         </div>
-      </div>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+        @else
+        <div class="text-sm text-gray-500 text-center py-8">
+            No orders found for this customer.
+        </div>
+        @endif
+    </div>
+</div>
+
    </div>
    @push('styles')
    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
