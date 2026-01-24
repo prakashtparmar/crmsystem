@@ -13,6 +13,9 @@ class PermissionsSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $modules = [
+            // Core
+            'dashboard',
+
             // System
             'users',
             'roles',
@@ -20,6 +23,7 @@ class PermissionsSeeder extends Seeder
             // Commerce
             'customers',
             'orders',
+            'order-returns',
             'products',
             'inventory',
 
@@ -52,9 +56,15 @@ class PermissionsSeeder extends Seeder
             'settings-profile',
             'settings-password',
             'settings-appearance',
+
+            // Warehouses
+            'warehouses',
+
+            // Finance / Logistics
+            'invoices',
+            'shipments',
         ];
 
-        // Base CRUD permissions
         $actions = ['view', 'create', 'edit', 'delete'];
 
         foreach ($modules as $module) {
@@ -67,8 +77,7 @@ class PermissionsSeeder extends Seeder
         }
 
         /**
-         * Scoped (Own vs All) permissions
-         * Only for modules where data ownership matters
+         * Scoped permissions (Own vs All)
          */
         $scopedModules = [
             'orders',
@@ -91,5 +100,13 @@ class PermissionsSeeder extends Seeder
                 'guard_name' => 'web',
             ]);
         }
+
+        // Non-CRUD permissions used in routes
+        Permission::firstOrCreate(['name' => 'customers.search', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'cart.view', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'cart.create', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'checkout.create', 'guard_name' => 'web']);
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }
