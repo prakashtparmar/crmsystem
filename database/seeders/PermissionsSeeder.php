@@ -87,6 +87,7 @@ class PermissionsSeeder extends Seeder
             'reports',
             'invoices',
             'shipments',
+            'order-returns',
         ];
 
         foreach ($scopedModules as $module) {
