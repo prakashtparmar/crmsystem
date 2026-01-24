@@ -26,6 +26,8 @@ class PermissionsSeeder extends Seeder
             'order-returns',
             'products',
             'inventory',
+            'cart',
+            'checkout',
 
             // Masters
             'categories',
@@ -104,9 +106,9 @@ class PermissionsSeeder extends Seeder
 
         // Non-CRUD permissions used in routes
         Permission::firstOrCreate(['name' => 'customers.search', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'cart.view', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'cart.create', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'checkout.create', 'guard_name' => 'web']);
+        // Permission::firstOrCreate(['name' => 'cart.view', 'guard_name' => 'web']);
+        // Permission::firstOrCreate(['name' => 'cart.create', 'guard_name' => 'web']);
+        // Permission::firstOrCreate(['name' => 'checkout.create', 'guard_name' => 'web']);
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
