@@ -29,7 +29,7 @@ class DashboardController extends Controller
 
         // Revenue: include all except cancelled & draft
         $totalRevenue = (clone $orderQuery)
-            ->whereIn('status', ['confirmed', 'processing', 'shipped', 'delivered'])
+            ->whereIn('status', ['draft','confirmed', 'processing', 'shipped', 'delivered'])
             ->sum('grand_total');
 
         // Visitors (until you implement tracking)
