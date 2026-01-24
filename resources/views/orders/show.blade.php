@@ -239,23 +239,23 @@
             @endphp
 
             <!-- Order Return -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-5">
-    <h3 class="text-[11px] font-semibold uppercase tracking-wider mb-3 text-gray-600 dark:text-gray-300">
-        Order Return
-    </h3>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-5">
+                <h3 class="text-[11px] font-semibold uppercase tracking-wider mb-3 text-gray-600 dark:text-gray-300">
+                    Order Return
+                </h3>
 
-    @if ($order->status === 'delivered')
-        <a href="{{ route('order-returns.create', ['order_id' => $order->id]) }}"
-           class="block w-full text-center px-3 py-2 text-xs rounded-md border
+                @if ($order->status === 'delivered')
+                    <a href="{{ route('order-returns.create', ['order_id' => $order->id]) }}"
+                        class="block w-full text-center px-3 py-2 text-xs rounded-md border
                   hover:bg-gray-100 dark:hover:bg-gray-700">
-            Create Return
-        </a>
-    @else
-        <div class="text-xs text-gray-500">
-            Returns can be created only after delivery.
-        </div>
-    @endif
-</div>
+                        Create Return
+                    </a>
+                @else
+                    <div class="text-xs text-gray-500">
+                        Returns can be created only after delivery.
+                    </div>
+                @endif
+            </div>
 
 
             <!-- CONTROL RAIL -->

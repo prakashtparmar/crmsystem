@@ -12,6 +12,26 @@ use App\Models\Product;
 
 class CustomerController extends Controller
 {
+    public function __construct()
+{
+    // Viewing customers & details
+    $this->middleware('permission:customers.view')->only(['index', 'show', 'addresses']);
+
+    // Searching customers (separate permission)
+    $this->middleware('permission:customers.search')->only(['search']);
+
+    // Create
+    $this->middleware('permission:customers.create')->only(['create', 'store']);
+
+    // Edit
+    $this->middleware('permission:customers.edit')->only(['edit', 'update']);
+
+    // Delete
+    $this->middleware('permission:customers.delete')->only(['destroy']);
+}
+
+
+
     public function index()
     {
         $customers = Customer::latest()->get();

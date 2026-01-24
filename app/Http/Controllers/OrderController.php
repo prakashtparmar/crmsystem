@@ -13,57 +13,41 @@ use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
-//     public function index()
-// {
-//     $orders = Order::with([
-//             'customer',
-//             'creator',
-//             'invoice',
-//             'shipments',
-//         ])
-//         ->withSum('payments as total_paid', 'amount')
-//         ->latest()
-//         ->paginate(20);
+    public function __construct()
+    {
+        $this->middleware('permission:orders.view|orders.view_all|orders.view_own')->only(['index', 'show']);
+        $this->middleware('permission:orders.create')->only(['create', 'store']);
+        $this->middleware('permission:orders.edit')->only(['edit', 'update']);
+        $this->middleware('permission:orders.delete')->only(['destroy']);
+    }
 
-//     return view('orders.index', compact('orders'));
-// }
+    public function index()
+    {
+        $user = auth()->user();
 
-public function index()
-{
-    $user = auth()->user();
+        abort_unless(
+            $user->can('orders.view') ||
+            $user->can('orders.view_all') ||
+            $user->can('orders.view_own'),
+            403
+        );
 
-    // Optional: block completely if user has no view permission
-    abort_unless(
-        $user->can('orders.view') ||
-        $user->can('orders.view_all') ||
-        $user->can('orders.view_own'),
-        403
-    );
+        $orders = Order::with(['customer', 'creator', 'invoice', 'shipments'])
+            ->withSum('payments as total_paid', 'amount')
+            ->when(
+                $user->can('orders.view_own') && ! $user->can('orders.view_all'),
+                fn ($q) => $q->where('created_by', $user->id)
+            )
+            ->latest()
+            ->paginate(20);
 
-    $orders = Order::with([
-            'customer',
-            'creator',
-            'invoice',
-            'shipments',
-        ])
-        ->withSum('payments as total_paid', 'amount')
-        ->when(
-            $user->can('orders.view_own') && ! $user->can('orders.view_all'),
-            fn ($q) => $q->where('created_by', $user->id)
-        )
-        ->latest()
-        ->paginate(20);
-
-    return view('orders.index', compact('orders'));
-}
-
-
+        return view('orders.index', compact('orders'));
+    }
 
     public function create()
     {
         $customers = Customer::orderBy('first_name')->get();
 
-        // 🔧 Enhanced: load products with available stock
         $products = Product::query()
             ->leftJoinSub(
                 DB::table('product_stocks')
@@ -90,7 +74,6 @@ public function index()
 
     public function store(Request $request, InventoryService $inventory)
     {
-        // 🔧 FIX: remove empty rows added by "Add Item"
         $items = array_values(array_filter(
             $request->input('items', []),
             fn ($row) => !empty($row['product_id']) && !empty($row['qty'])
@@ -113,9 +96,6 @@ public function index()
                 $customer = Customer::with(['addresses'])
                     ->findOrFail($data['customer_id']);
 
-                /**
-                 * 🆕 Create NEW BILLING address if provided
-                 */
                 if ($request->filled('new_billing.line1')) {
                     $addr = $customer->addresses()->create([
                         'customer_id'   => $customer->id,
@@ -131,9 +111,6 @@ public function index()
                     $data['billing_address_id'] = $addr->id;
                 }
 
-                /**
-                 * 🆕 Create NEW SHIPPING address if provided
-                 */
                 if ($request->filled('new_shipping.line1')) {
                     $addr = $customer->addresses()->create([
                         'customer_id'   => $customer->id,
@@ -149,12 +126,8 @@ public function index()
                     $data['shipping_address_id'] = $addr->id;
                 }
 
-                // refresh addresses
                 $customer->load('addresses');
 
-                /**
-                 * 🔁 Same-as-billing logic (works for existing & new)
-                 */
                 if (
                     $request->boolean('same_as_billing') &&
                     !empty($data['billing_address_id']) &&
@@ -223,15 +196,9 @@ public function index()
                 return $order;
             });
 
-            $fromCustomer = str_contains(url()->previous(), '/customers/');
-
-            return $fromCustomer
-                ? redirect()
-                    ->route('customers.show', $order->customer_id)
-                    ->with('success', 'Order placed successfully.')
-                : redirect()
-                    ->route('orders.index')
-                    ->with('success', 'Order placed successfully.');
+            return redirect()
+                ->route('orders.index')
+                ->with('success', 'Order placed successfully.');
 
         } catch (\Throwable $e) {
             Log::error('Order create failed', [
@@ -245,20 +212,60 @@ public function index()
 
     public function show(Order $order)
     {
+        $user = auth()->user();
+
+        if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
+            abort_unless($order->created_by === $user->id, 403);
+        }
+
         $order->load('items', 'customer', 'payments', 'shipments', 'statusLogs', 'invoice');
 
         return view('orders.show', compact('order'));
     }
 
     public function edit(Order $order)
-    {
-        $order->load('items');
+{
+    $user = auth()->user();
 
-        return view('orders.edit', compact('order'));
+    if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
+        abort_unless($order->created_by === $user->id, 403);
     }
+
+    $order->load('items');
+
+    $products = Product::query()
+        ->leftJoinSub(
+            DB::table('product_stocks')
+                ->selectRaw('product_id, SUM(quantity - reserved_qty) as available_qty')
+                ->groupBy('product_id'),
+            'stock_totals',
+            'products.id',
+            '=',
+            'stock_totals.product_id'
+        )
+        ->select(
+            'products.id',
+            'products.name',
+            'products.price',
+            'products.gst_percent',
+            DB::raw('CAST(COALESCE(stock_totals.available_qty, 0) AS UNSIGNED) as available_qty')
+        )
+        ->where('products.is_active', true)
+        ->orderBy('products.name')
+        ->get();
+
+    return view('orders.edit', compact('order', 'products'));
+}
+
 
     public function update(Request $request, Order $order)
     {
+        $user = auth()->user();
+
+        if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
+            abort_unless($order->created_by === $user->id, 403);
+        }
+
         $order->update($request->only([
             'billing_address',
             'shipping_address',
@@ -269,6 +276,12 @@ public function index()
 
     public function destroy(Order $order)
     {
+        $user = auth()->user();
+
+        if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
+            abort_unless($order->created_by === $user->id, 403);
+        }
+
         $order->delete();
 
         return redirect()

@@ -16,8 +16,8 @@ class DatabaseSeeder extends Seeder
         // PermissionsSeeder::class,
         // RolesSeeder::class,
         SetupSeeder::class,
-        // MasterSeeder::class,
-        // ProductSeeder::class,
+        MasterSeeder::class,
+        ProductSeeder::class,
         // ComplianceSeeder::class,
         // CustomerSeeder::class,
 

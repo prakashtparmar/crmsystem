@@ -19,7 +19,7 @@
         </div>
 
         <!-- Center: Global Customer Search -->
-        @can('customers.view')
+        @can('customers.search')
         <form action="{{ route('customers.search') }}" method="GET"
               class="flex w-full max-w-md items-center">
             <div class="relative w-full">

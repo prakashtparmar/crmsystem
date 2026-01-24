@@ -42,7 +42,6 @@
                         </h2>
 
                         <div class="grid grid-cols-1 gap-4">
-
                             <!-- Avatar -->
                             <div class="flex items-center gap-3">
                                 <div
@@ -106,22 +105,27 @@
 
                     <!-- Roles -->
                     <div class="p-5">
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                             <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
                                 Roles & Permissions
                             </h2>
 
-                            <label
-                                class="flex items-center gap-2 text-xs cursor-pointer text-gray-600 dark:text-gray-300">
-                                <input type="checkbox" id="selectAllRoles" class="rounded">
-                                <span>Select All</span>
-                            </label>
+                            <div class="flex items-center gap-3">
+                                <input type="text" id="roleSearch"
+                                       placeholder="Search role..."
+                                       class="w-56 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 px-2 py-1 text-xs">
+
+                                <label class="flex items-center gap-2 text-xs cursor-pointer text-gray-600 dark:text-gray-300">
+                                    <input type="checkbox" id="selectAllRoles" class="rounded">
+                                    <span>Select All</span>
+                                </label>
+                            </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="roleContainer">
                             @foreach ($roles as $role)
-                                <div
-                                    class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-900/40 hover:shadow-sm transition">
+                                <div class="role-card rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-900/40 hover:shadow-sm transition"
+                                     data-role="{{ strtolower($role->name) }}">
                                     <label class="flex items-center gap-2 mb-2 cursor-pointer">
                                         <input type="checkbox" name="roles[]" value="{{ $role->id }}"
                                             @checked(in_array($role->id, old('roles', [])))>
@@ -135,7 +139,7 @@
                                             @foreach ($role->permissions as $perm)
                                                 <span
                                                     class="px-2 py-0.5 text-[10px] rounded-full bg-indigo-100 text-indigo-700
-                                         dark:bg-indigo-900/40 dark:text-indigo-300">
+                                                    dark:bg-indigo-900/40 dark:text-indigo-300">
                                                     {{ $perm->name }}
                                                 </span>
                                             @endforeach
@@ -149,7 +153,6 @@
                             @endforeach
                         </div>
                     </div>
-
 
                     <!-- Actions -->
                     <div
@@ -171,6 +174,13 @@
         <script>
             document.getElementById('selectAllRoles')?.addEventListener('change', function() {
                 document.querySelectorAll('input[name="roles[]"]').forEach(cb => cb.checked = this.checked);
+            });
+
+            document.getElementById('roleSearch')?.addEventListener('input', function () {
+                const term = this.value.toLowerCase();
+                document.querySelectorAll('.role-card').forEach(card => {
+                    card.style.display = card.dataset.role.includes(term) ? '' : 'none';
+                });
             });
 
             const input = document.getElementById('avatarInput');

@@ -30,7 +30,7 @@
 
                         <form action="{{ route('roles.store') }}"
                               method="POST"
-                              class="max-w-4xl space-y-6">
+                              class="max-w-5xl space-y-6">
                             @csrf
 
                             <!-- Role Name -->
@@ -44,19 +44,30 @@
 
                             <!-- Permissions -->
                             <div>
-                                <div class="flex items-center justify-between mb-2">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
                                     <label class="text-sm font-medium">
                                         {{ __('Permissions') }}
                                     </label>
 
-                                    <label class="flex items-center gap-2 text-xs cursor-pointer">
-                                        <input type="checkbox"
-                                               id="selectAllPermissions"
-                                               class="rounded text-indigo-600">
-                                        <span class="text-gray-700 dark:text-gray-300">
-                                            Select All Permissions
-                                        </span>
-                                    </label>
+                                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                                        <!-- Search -->
+                                        <input
+                                            type="text"
+                                            id="permissionSearch"
+                                            placeholder="Search permission..."
+                                            class="w-full sm:w-64 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                        >
+
+                                        <!-- Global Select -->
+                                        <label class="flex items-center gap-2 text-xs cursor-pointer whitespace-nowrap">
+                                            <input type="checkbox"
+                                                   id="selectAllPermissions"
+                                                   class="rounded text-indigo-600">
+                                            <span class="text-gray-700 dark:text-gray-300">
+                                                Select All
+                                            </span>
+                                        </label>
+                                    </div>
                                 </div>
 
                                 @php
@@ -69,7 +80,7 @@
                                     $actionOrder = ['view', 'create', 'edit', 'delete'];
                                 @endphp
 
-                                <div class="space-y-4">
+                                <div class="space-y-4" id="permissionContainer">
                                     @foreach($groupedPermissions as $group => $items)
                                         @php
                                             $sortedItems = $items->sortBy(function ($perm) use ($actionOrder) {
@@ -78,7 +89,8 @@
                                             });
                                         @endphp
 
-                                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                                        <div class="permission-group border border-gray-200 dark:border-gray-700 rounded-lg p-3"
+                                             data-group-wrapper>
                                             <div class="mb-2 flex items-center justify-between">
                                                 <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 capitalize">
                                                     {{ str_replace('_', ' ', $group) }}
@@ -98,7 +110,8 @@
                                                         $action = explode('.', $permission->name)[1] ?? $permission->name;
                                                     @endphp
                                                     <label
-                                                        class="flex items-center gap-2 px-2 py-1 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                                                        class="permission-item flex items-center gap-2 px-2 py-1 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/40"
+                                                        data-permission="{{ strtolower($permission->name) }}">
                                                         <input
                                                             type="checkbox"
                                                             name="permissions[]"
@@ -160,18 +173,43 @@
                 global.indeterminate = checked.length > 0 && checked.length < all.length;
             }
 
+            function filterPermissions(term) {
+                term = term.toLowerCase();
+
+                document.querySelectorAll('.permission-group').forEach(group => {
+                    let anyVisible = false;
+
+                    group.querySelectorAll('.permission-item').forEach(item => {
+                        const name = item.dataset.permission;
+                        const match = name.includes(term);
+                        item.style.display = match ? '' : 'none';
+                        if (match) anyVisible = true;
+                    });
+
+                    group.style.display = anyVisible ? '' : 'none';
+                });
+            }
+
             document.addEventListener('DOMContentLoaded', function () {
                 const global = document.getElementById('selectAllPermissions');
-                if (!global) return;
+                const search = document.getElementById('permissionSearch');
 
-                global.addEventListener('change', function () {
-                    const all = document.querySelectorAll('input[name="permissions[]"]');
-                    all.forEach(cb => cb.checked = this.checked);
-                });
+                if (global) {
+                    global.addEventListener('change', function () {
+                        const all = document.querySelectorAll('input[name="permissions[]"]');
+                        all.forEach(cb => cb.checked = this.checked);
+                    });
+                }
 
                 document.querySelectorAll('input[name="permissions[]"]').forEach(cb => {
                     cb.addEventListener('change', updateGlobalCheckbox);
                 });
+
+                if (search) {
+                    search.addEventListener('input', function () {
+                        filterPermissions(this.value);
+                    });
+                }
 
                 updateGlobalCheckbox();
             });

@@ -18,11 +18,13 @@
             </p>
         </div>
 
-        <a href="{{ route('orders.create') }}">
-            <x-button type="primary">
-                + {{ __('New Order') }}
-            </x-button>
-        </a>
+        @can('orders.create')
+            <a href="{{ route('orders.create') }}">
+                <x-button type="primary">
+                    + {{ __('New Order') }}
+                </x-button>
+            </a>
+        @endcan
     </div>
 
     @if (session('success'))
@@ -47,13 +49,18 @@
         </div>
     @endif
 
-    @include('orders.partials.table', ['orders' => $orders])
+    @can('orders.view')
+        @include('orders.partials.table', ['orders' => $orders])
+    @else
+        <div class="p-6 rounded-lg border border-yellow-200 bg-yellow-50 text-yellow-800">
+            You do not have permission to view orders.
+        </div>
+    @endcan
 
     @push('styles')
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
         <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
     @endpush
-
 
     @push('scripts')
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -64,6 +71,8 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
+                if (!document.getElementById('ordersTable')) return;
+
                 const table = $('#ordersTable').DataTable({
                     dom: 'lBfrtip',
                     pageLength: 10,
@@ -109,5 +118,4 @@
             });
         </script>
     @endpush
-
 </x-layouts.app>

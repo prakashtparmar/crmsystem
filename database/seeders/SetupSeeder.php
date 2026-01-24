@@ -28,7 +28,7 @@ class SetupSeeder extends Seeder
 
             // E-Commerce / Commerce
             'customers', 'orders', 'order-returns', 'products', 'inventory',
-            'cart', 'checkout', 'invoices', 'shipments',
+            'cart', 'checkout', 'invoices', 'shipments','warehouses',
 
             // Masters
             'categories', 'subcategories', 'brands', 'units', 'crops', 'seasons',
@@ -58,7 +58,8 @@ class SetupSeeder extends Seeder
 
         // Scoped permissions
         $scopedModules = [
-            'orders', 'order-returns', 'customers', 'campaigns', 'inventory', 'reports', 'invoices', 'shipments',
+            'orders', 'order-returns', 'customers', 'campaigns',
+            'inventory', 'reports', 'invoices', 'shipments',
         ];
 
         foreach ($scopedModules as $module) {
@@ -66,69 +67,36 @@ class SetupSeeder extends Seeder
             Permission::firstOrCreate(['name' => "{$module}.view_own", 'guard_name' => 'web']);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 2. Create Roles
-        |--------------------------------------------------------------------------
-        */
-
-        $superAdmin = Role::firstOrCreate(['name' => 'Super Admin', 'guard_name' => 'web']);
-        $admin      = Role::firstOrCreate(['name' => 'Admin', 'guard_name' => 'web']);
-        $manager    = Role::firstOrCreate(['name' => 'Manager', 'guard_name' => 'web']);
-        $seller     = Role::firstOrCreate(['name' => 'Seller', 'guard_name' => 'web']);
-        $support    = Role::firstOrCreate(['name' => 'Support', 'guard_name' => 'web']);
-        $customer   = Role::firstOrCreate(['name' => 'Customer', 'guard_name' => 'web']);
+        // Extra granular permissions
+        Permission::firstOrCreate(['name' => 'customers.search', 'guard_name' => 'web']);
 
         /*
         |--------------------------------------------------------------------------
-        | 3. Assign Permissions to Roles
+        | 2. Create Super Admin Role
         |--------------------------------------------------------------------------
         */
 
-        // Super Admin gets everything
+        $superAdmin = Role::firstOrCreate([
+            'name' => 'Super Admin',
+            'guard_name' => 'web',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 3. Assign ALL Permissions to Super Admin
+        |--------------------------------------------------------------------------
+        */
+
         $superAdmin->syncPermissions(Permission::all());
 
-        // Admin (full system but not dangerous settings)
-        $admin->syncPermissions(Permission::whereNotIn('name', [
-            'settings-appearance.delete',
-        ])->get());
-
-        // Manager
-        $manager->syncPermissions([
-            'orders.view', 'orders.create', 'orders.edit',
-            'products.view', 'products.create', 'products.edit',
-            'customers.view', 'customers.create', 'customers.edit',
-            'inventory.view', 'inventory.edit',
-        ]);
-
-        // Seller
-        $seller->syncPermissions([
-            'orders.view_own',
-            'products.view',
-            'customers.view',
-        ]);
-
-        // Support
-        $support->syncPermissions([
-            'customers.view',
-            'orders.view',
-        ]);
-
-        // Customer
-        $customer->syncPermissions([
-            'orders.view_own',
-            'products.view',
-        ]);
-
         /*
         |--------------------------------------------------------------------------
-        | 4. Create Users & Assign Roles
+        | 4. Create Super Admin User & Assign Role
         |--------------------------------------------------------------------------
         */
 
-        // Super Admin
         $adminUser = User::firstOrCreate(
-            ['email' => 'dipak.patel@krushifly.in'],
+            ['email' => 'admin@example.com'],
             [
                 'name' => 'Super Admin',
                 'password' => Hash::make('password'),
@@ -136,63 +104,7 @@ class SetupSeeder extends Seeder
                 'status' => 'active',
             ]
         );
+
         $adminUser->assignRole($superAdmin);
-
-        // Manager
-        $managerUser = User::firstOrCreate(
-            ['email' => 'manager@example.com'],
-            [
-                'name' => 'Store Manager',
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-                'status' => 'active',
-            ]
-        );
-        $managerUser->assignRole($manager);
-
-        // Seller
-        $sellerUser = User::firstOrCreate(
-            ['email' => 'seller@example.com'],
-            [
-                'name' => 'Main Seller',
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-                'status' => 'active',
-            ]
-        );
-        $sellerUser->assignRole($seller);
-
-        // Support
-        $supportUser = User::firstOrCreate(
-            ['email' => 'support@example.com'],
-            [
-                'name' => 'Support Agent',
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-                'status' => 'active',
-            ]
-        );
-        $supportUser->assignRole($support);
-
-        // Demo Customers
-        $customers = [
-            ['name' => 'John Customer', 'email' => 'john@example.com'],
-            ['name' => 'Emma Buyer', 'email' => 'emma@example.com'],
-            ['name' => 'Raj Shopper', 'email' => 'raj@example.com'],
-        ];
-
-        foreach ($customers as $data) {
-            $user = User::firstOrCreate(
-                ['email' => $data['email']],
-                [
-                    'name' => $data['name'],
-                    'password' => Hash::make('password'),
-                    'email_verified_at' => now(),
-                    'status' => 'active',
-                ]
-            );
-
-            $user->assignRole($customer);
-        }
     }
 }

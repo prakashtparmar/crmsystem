@@ -35,6 +35,7 @@ use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderReturnController;
+use App\Http\Controllers\WarehouseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -76,15 +77,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('can:settings-appearance.view')->name('settings.appearance.edit');
 
     /* ================= Orders ================= */
-    Route::resource('orders', OrderController::class)->middleware([
-        'index' => 'can:orders.view',
-        'show' => 'can:orders.view',
-        'create' => 'can:orders.create',
-        'store' => 'can:orders.create',
-        'edit' => 'can:orders.edit',
-        'update' => 'can:orders.edit',
-        'destroy' => 'can:orders.delete',
-    ]);
+    // Route::resource('orders', OrderController::class)->only(['index', 'show'])
+    //     ->middleware('can:orders.view');
+
+    // Route::resource('orders', OrderController::class)->only(['create', 'store'])
+    //     ->middleware('can:orders.create');
+
+    // Route::resource('orders', OrderController::class)->only(['edit', 'update'])
+    //     ->middleware('can:orders.edit');
+
+    // Route::resource('orders', OrderController::class)->only(['destroy'])
+    //     ->middleware('can:orders.delete');
+
+
+    Route::resource('orders', OrderController::class);
+
 
     Route::post('orders/{order}/items', [OrderItemController::class, 'store'])
         ->middleware('can:orders.edit')->name('orders.items.store');
@@ -182,20 +189,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ]);
 
     /* ================= Customers ================= */
-    Route::get('customers/search', [CustomerController::class, 'search'])
-        ->middleware('can:customers.view')->name('customers.search');
-    Route::get('customers/{customer}/addresses', [CustomerController::class, 'addresses'])
-        ->middleware('can:customers.view')->name('customers.addresses');
+    // Route::get('customers/search', [CustomerController::class, 'search'])
+    //     ->middleware('can:customers.view')->name('customers.search');
+    // Route::get('customers/{customer}/addresses', [CustomerController::class, 'addresses'])
+    //     ->middleware('can:customers.view')->name('customers.addresses');
 
-    Route::resource('customers', CustomerController::class)->middleware([
-        'index' => 'can:customers.view',
-        'show' => 'can:customers.view',
-        'create' => 'can:customers.create',
-        'store' => 'can:customers.create',
-        'edit' => 'can:customers.edit',
-        'update' => 'can:customers.edit',
-        'destroy' => 'can:customers.delete',
-    ]);
+    // Route::resource('customers', CustomerController::class)->middleware([
+    //     'index' => 'can:customers.view',
+    //     'show' => 'can:customers.view',
+    //     'create' => 'can:customers.create',
+    //     'store' => 'can:customers.create',
+    //     'edit' => 'can:customers.edit',
+    //     'update' => 'can:customers.edit',
+    //     'destroy' => 'can:customers.delete',
+    // ]);
+
+    /* ================= Customers ================= */
+    Route::get('customers/search', [CustomerController::class, 'search'])
+        ->middleware('can:customers.search')
+        ->name('customers.search');
+
+    Route::get('customers/{customer}/addresses', [CustomerController::class, 'addresses'])
+        ->middleware('can:customers.view')
+        ->name('customers.addresses');
+
+    Route::resource('customers', CustomerController::class);
+
 
     /* ================= Products & Masters ================= */
 
@@ -251,6 +270,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('roles/bulk-action', [RoleController::class, 'bulkAction'])
         ->middleware('can:roles.edit')->name('roles.bulkAction');
     Route::resource('roles', RoleController::class)->middleware('can:roles.view');
+
+
+    Route::resource('warehouses', WarehouseController::class);
+Route::patch('warehouses/{warehouse}/toggle', [WarehouseController::class, 'toggle'])
+    ->name('warehouses.toggle');
+
 });
 
 require __DIR__ . '/auth.php';
