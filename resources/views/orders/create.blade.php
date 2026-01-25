@@ -1,4 +1,4 @@
-    <x-layouts.app>
+   <x-layouts.app>
     <!-- Breadcrumbs -->
     <div class="mb-6 flex items-center text-sm">
         <a href="{{ route('dashboard') }}"

@@ -5,11 +5,11 @@
                 Edit Order {{ $order->order_code }}
             </h1>
             <p class="text-sm text-gray-500 mt-1">
-                Update items, quantities, and addresses
+                Update items, quantities, addresses & discount
             </p>
         </div>
         <a href="{{ route('orders.show', $order) }}"
-            class="px-4 py-2 border rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+           class="px-4 py-2 border rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
             Back
         </a>
     </div>
@@ -33,14 +33,14 @@
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Billing Address</label>
                 <textarea name="billing_address"
-                    class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800"
-                    rows="3">{{ old('billing_address', $order->billing_address) }}</textarea>
+                          class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800"
+                          rows="3">{{ old('billing_address', $order->billing_address) }}</textarea>
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">Shipping Address</label>
                 <textarea name="shipping_address"
-                    class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800"
-                    rows="3">{{ old('shipping_address', $order->shipping_address) }}</textarea>
+                          class="w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800"
+                          rows="3">{{ old('shipping_address', $order->shipping_address) }}</textarea>
             </div>
         </div>
 
@@ -52,57 +52,48 @@
 
             <div id="items" class="space-y-3">
                 @foreach ($order->items as $i => $item)
-                    <div class="item-row flex flex-col md:flex-row gap-4 p-4 rounded-xl border">
+                    <div class="item-row flex flex-col md:flex-row gap-4 p-4 rounded-xl border bg-white dark:bg-gray-900">
 
-                        <!-- Product -->
                         <div class="w-full md:w-2/5">
                             <label class="block text-xs text-gray-500 mb-1">Product</label>
                             <select name="items[{{ $i }}][product_id]"
-                                class="product-select w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800">
+                                    class="product-select w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800">
                                 <option value="">Select Product</option>
                                 @foreach ($products as $p)
                                     <option value="{{ $p->id }}"
-                                        data-price="{{ $p->price }}"
-                                        data-tax="{{ $p->gst_percent }}"
-                                        @selected($p->id == $item->product_id)>
+                                            data-price="{{ $p->price }}"
+                                            data-tax="{{ $p->gst_percent }}"
+                                            @selected($p->id == $item->product_id)>
                                         {{ $p->name }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
 
-                        <!-- Price -->
                         <div class="w-full md:w-1/6">
                             <label class="block text-xs text-gray-500 mb-1">Price</label>
                             <input class="price w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800"
-                                value="{{ $item->price }}" readonly>
+                                   value="{{ $item->price }}" readonly>
                         </div>
 
-                        <!-- Qty -->
                         <div class="w-full md:w-1/6">
                             <label class="block text-xs text-gray-500 mb-1">Qty</label>
                             <div class="flex items-center">
                                 <button type="button"
-                                    class="qty-down px-2 border border-r-0 rounded-l-lg bg-gray-50 dark:bg-gray-700">▼</button>
-
-                                <input
-                                    type="number"
-                                    min="1"
-                                    step="1"
-                                    name="items[{{ $i }}][qty]"
-                                    class="qty w-full text-center border-t border-b border-gray-300 dark:border-gray-700 dark:bg-gray-800"
-                                    value="{{ (int) $item->quantity }}">
-
+                                        class="qty-down px-2 border border-r-0 rounded-l-lg bg-gray-50 dark:bg-gray-700">−</button>
+                                <input type="number" min="1" step="1"
+                                       name="items[{{ $i }}][qty]"
+                                       class="qty w-full text-center border-t border-b border-gray-300 dark:border-gray-700 dark:bg-gray-800"
+                                       value="{{ (int) $item->quantity }}">
                                 <button type="button"
-                                    class="qty-up px-2 border border-l-0 rounded-r-lg bg-gray-50 dark:bg-gray-700">▲</button>
+                                        class="qty-up px-2 border border-l-0 rounded-r-lg bg-gray-50 dark:bg-gray-700">+</button>
                             </div>
                         </div>
 
-                        <!-- Total -->
                         <div class="w-full md:w-1/6">
                             <label class="block text-xs text-gray-500 mb-1">Total</label>
                             <input class="total w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800 font-semibold"
-                                value="{{ number_format($item->total, 2) }}" readonly>
+                                   value="{{ number_format($item->total, 2) }}" readonly>
                         </div>
 
                         <input class="tax hidden" data-rate="{{ $item->tax_rate }}">
@@ -117,22 +108,40 @@
             </div>
 
             <button type="button" id="addRow"
-                class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm">
+                    class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm">
                 + Add Item
             </button>
         </div>
 
         <!-- Totals -->
-        <div class="flex flex-col md:flex-row gap-4 pt-4 border-t">
-            <input id="sub_total" name="sub_total" readonly
-                class="w-32 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-right"
-                value="{{ $order->sub_total }}">
-            <input id="tax_amount" name="tax_amount" readonly
-                class="w-32 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-right"
-                value="{{ $order->tax_amount }}">
-            <input id="grand_total" name="grand_total" readonly
-                class="w-40 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-right font-bold text-blue-600"
-                value="{{ $order->grand_total }}">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t bg-gray-50 dark:bg-gray-900 p-4 rounded-xl">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Sub Total</label>
+                <input id="sub_total" readonly
+                       class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-right"
+                       value="{{ $order->sub_total }}">
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Tax</label>
+                <input id="tax_amount" readonly
+                       class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-right"
+                       value="{{ $order->tax_amount }}">
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Discount</label>
+                <input id="discount_amount" name="discount_amount" type="number" min="0" step="0.01"
+                       class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-right"
+                       value="{{ $order->discount_amount ?? 0 }}">
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Grand Total</label>
+                <input id="grand_total" readonly
+                       class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-right font-bold text-blue-600"
+                       value="{{ $order->grand_total }}">
+            </div>
         </div>
 
         <div class="flex justify-end">
@@ -163,19 +172,32 @@
                     tax += lineTax;
                 });
 
+                const discountEl = document.getElementById('discount_amount');
+                let discount = parseFloat(discountEl.value || 0);
+                const max = sub + tax;
+
+                if (discount > max) {
+                    discount = max;
+                    discountEl.value = max.toFixed(2);
+                }
+
                 sub_total.value = sub.toFixed(2);
                 tax_amount.value = tax.toFixed(2);
-                grand_total.value = (sub + tax).toFixed(2);
+                grand_total.value = Math.max(0, (sub + tax - discount)).toFixed(2);
             }
 
             document.addEventListener('change', e => {
                 if (e.target.classList.contains('product-select')) {
                     const opt = e.target.selectedOptions[0];
                     const row = e.target.closest('.item-row');
-
                     row.querySelector('.price').value = opt.dataset.price || 0;
                     row.querySelector('.tax').dataset.rate = opt.dataset.tax || 0;
+                    recalc();
+                }
+            });
 
+            document.addEventListener('input', e => {
+                if (e.target.classList.contains('qty') || e.target.id === 'discount_amount') {
                     recalc();
                 }
             });
@@ -202,13 +224,6 @@
                 }
             });
 
-            document.addEventListener('input', e => {
-                if (e.target.classList.contains('qty')) {
-                    e.target.value = Math.max(1, parseInt(e.target.value || 1));
-                    recalc();
-                }
-            });
-
             document.getElementById('addRow').addEventListener('click', () => {
                 const base = document.querySelector('.item-row');
                 const clone = base.cloneNode(true);
@@ -222,6 +237,7 @@
 
                 items.appendChild(clone);
                 index++;
+                recalc();
             });
 
             document.addEventListener('DOMContentLoaded', recalc);

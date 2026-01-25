@@ -22,37 +22,30 @@ class OrderController extends Controller
     }
 
     public function index()
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasRole('Master Admin');
 
-    $isSuperAdmin = $user->hasRole('Master Admin');
+        if (! $isSuperAdmin) {
+            abort_unless(
+                $user->can('orders.view') ||
+                $user->can('orders.view_all') ||
+                $user->can('orders.view_own'),
+                403
+            );
+        }
 
-    // Only non–super-admin users are checked for permissions
-    if (! $isSuperAdmin) {
-        abort_unless(
-            $user->can('orders.view') ||
-            $user->can('orders.view_all') ||
-            $user->can('orders.view_own'),
-            403
-        );
+        $orders = Order::with(['customer', 'creator', 'invoice', 'shipments'])
+            ->withSum('payments as total_paid', 'amount')
+            ->when(
+                ! $isSuperAdmin && ! $user->can('orders.view_all'),
+                fn ($q) => $q->where('created_by', $user->id)
+            )
+            ->latest()
+            ->get();
+
+        return view('orders.index', compact('orders'));
     }
-
-    $orders = Order::with(['customer', 'creator', 'invoice', 'shipments'])
-        ->withSum('payments as total_paid', 'amount')
-        ->when(
-            // Restrict ONLY when:
-            // - user is NOT super admin
-            // - and user does NOT have view_all
-            ! $isSuperAdmin && ! $user->can('orders.view_all'),
-            fn ($q) => $q->where('created_by', $user->id)
-        )
-        ->latest()->get();
-
-
-    return view('orders.index', compact('orders'));
-}
-
-
 
     public function create()
     {
@@ -98,13 +91,13 @@ class OrderController extends Controller
             'items'                 => 'required|array|min:1',
             'items.*.product_id'    => 'required|exists:products,id',
             'items.*.qty'           => 'required|numeric|min:1',
+            'discount_amount'       => 'nullable|numeric|min:0',
         ]);
 
         try {
-            $order = DB::transaction(function () use ($data, $inventory, $request) {
+            DB::transaction(function () use ($data, $request) {
 
-                $customer = Customer::with(['addresses'])
-                    ->findOrFail($data['customer_id']);
+                $customer = Customer::with(['addresses'])->findOrFail($data['customer_id']);
 
                 if ($request->filled('new_billing.line1')) {
                     $addr = $customer->addresses()->create([
@@ -117,7 +110,6 @@ class OrderController extends Controller
                         'pincode'       => $request->input('new_billing.pincode'),
                         'country'       => 'India',
                     ]);
-
                     $data['billing_address_id'] = $addr->id;
                 }
 
@@ -132,11 +124,8 @@ class OrderController extends Controller
                         'pincode'       => $request->input('new_shipping.pincode'),
                         'country'       => 'India',
                     ]);
-
                     $data['shipping_address_id'] = $addr->id;
                 }
-
-                $customer->load('addresses');
 
                 if (
                     $request->boolean('same_as_billing') &&
@@ -145,6 +134,8 @@ class OrderController extends Controller
                 ) {
                     $data['shipping_address_id'] = $data['billing_address_id'];
                 }
+
+                $customer->load('addresses');
 
                 $billing = isset($data['billing_address_id'])
                     ? $customer->addresses->firstWhere('id', $data['billing_address_id'])
@@ -197,25 +188,20 @@ class OrderController extends Controller
                     $taxTotal += $lineTax;
                 }
 
-                $order->update([
-                    'sub_total'   => $subTotal,
-                    'tax_amount'  => $taxTotal,
-                    'grand_total' => $subTotal + $taxTotal,
-                ]);
+                $discount = (float) ($request->input('discount_amount') ?? 0);
 
-                return $order;
+                $order->update([
+                    'sub_total'       => $subTotal,
+                    'tax_amount'      => $taxTotal,
+                    'discount_amount' => $discount,
+                    'grand_total'     => max(0, $subTotal + $taxTotal - $discount),
+                ]);
             });
 
-            return redirect()
-                ->route('orders.index')
-                ->with('success', 'Order placed successfully.');
+            return redirect()->route('orders.index')->with('success', 'Order placed successfully.');
 
         } catch (\Throwable $e) {
-            Log::error('Order create failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
+            Log::error('Order create failed', ['error' => $e->getMessage()]);
             return back()->with('error', 'Failed to place order. Please try again.');
         }
     }
@@ -234,123 +220,121 @@ class OrderController extends Controller
     }
 
     public function edit(Order $order)
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
-        abort_unless($order->created_by === $user->id, 403);
+        if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
+            abort_unless($order->created_by === $user->id, 403);
+        }
+
+        $order->load('items');
+
+        $products = Product::query()
+            ->leftJoinSub(
+                DB::table('product_stocks')
+                    ->selectRaw('product_id, SUM(quantity - reserved_qty) as available_qty')
+                    ->groupBy('product_id'),
+                'stock_totals',
+                'products.id',
+                '=',
+                'stock_totals.product_id'
+            )
+            ->select(
+                'products.id',
+                'products.name',
+                'products.price',
+                'products.gst_percent',
+                DB::raw('CAST(COALESCE(stock_totals.available_qty, 0) AS UNSIGNED) as available_qty')
+            )
+            ->where('products.is_active', true)
+            ->orderBy('products.name')
+            ->get();
+
+        return view('orders.edit', compact('order', 'products'));
     }
 
-    $order->load('items');
+    public function update(Request $request, Order $order)
+    {
+        $user = auth()->user();
 
-    $products = Product::query()
-        ->leftJoinSub(
-            DB::table('product_stocks')
-                ->selectRaw('product_id, SUM(quantity - reserved_qty) as available_qty')
-                ->groupBy('product_id'),
-            'stock_totals',
-            'products.id',
-            '=',
-            'stock_totals.product_id'
-        )
-        ->select(
-            'products.id',
-            'products.name',
-            'products.price',
-            'products.gst_percent',
-            DB::raw('CAST(COALESCE(stock_totals.available_qty, 0) AS UNSIGNED) as available_qty')
-        )
-        ->where('products.is_active', true)
-        ->orderBy('products.name')
-        ->get();
+        if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
+            abort_unless($order->created_by === $user->id, 403);
+        }
 
-    return view('orders.edit', compact('order', 'products'));
-}
+        $items = array_values(array_filter(
+            $request->input('items', []),
+            fn ($row) => !empty($row['product_id']) && !empty($row['qty'])
+        ));
 
+        $request->merge(['items' => $items]);
 
-   public function update(Request $request, Order $order)
-{
-    $user = auth()->user();
-
-    if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
-        abort_unless($order->created_by === $user->id, 403);
-    }
-
-    $items = array_values(array_filter(
-        $request->input('items', []),
-        fn ($row) => !empty($row['product_id']) && !empty($row['qty'])
-    ));
-
-    $request->merge(['items' => $items]);
-
-    $data = $request->validate([
-        'billing_address'        => 'nullable|string',
-        'shipping_address'       => 'nullable|string',
-        'items'                  => 'required|array|min:1',
-        'items.*.product_id'     => 'required|exists:products,id',
-        'items.*.qty'            => 'required|numeric|min:1',
-    ]);
-
-    try {
-        DB::transaction(function () use ($order, $data) {
-
-            // Update addresses
-            $order->update([
-                'billing_address'  => $data['billing_address'] ?? $order->billing_address,
-                'shipping_address' => $data['shipping_address'] ?? $order->shipping_address,
-            ]);
-
-            // Remove old items
-            $order->items()->delete();
-
-            $subTotal = 0;
-            $taxTotal = 0;
-
-            foreach ($data['items'] as $row) {
-                $product = Product::findOrFail($row['product_id']);
-
-                $price = $product->price;
-                $qty   = $row['qty'];
-
-                $line    = $price * $qty;
-                $taxRate = $product->gst_percent ?? 0;
-                $lineTax = ($line * $taxRate) / 100;
-
-                $order->items()->create([
-                    'product_id'   => $product->id,
-                    'product_name' => $product->name,
-                    'price'        => $price,
-                    'quantity'     => $qty,
-                    'tax_rate'     => $taxRate,
-                    'tax_amount'   => $lineTax,
-                    'total'        => $line + $lineTax,
-                ]);
-
-                $subTotal += $line;
-                $taxTotal += $lineTax;
-            }
-
-            $order->update([
-                'sub_total'   => $subTotal,
-                'tax_amount'  => $taxTotal,
-                'grand_total' => $subTotal + $taxTotal,
-            ]);
-        });
-
-        return redirect()
-            ->route('orders.show', $order)
-            ->with('success', 'Order updated successfully.');
-
-    } catch (\Throwable $e) {
-        Log::error('Order update failed', [
-            'order_id' => $order->id,
-            'error' => $e->getMessage(),
+        $data = $request->validate([
+            'billing_address'    => 'nullable|string',
+            'shipping_address'   => 'nullable|string',
+            'items'              => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.qty'        => 'required|numeric|min:1',
+            'discount_amount'    => 'nullable|numeric|min:0',
         ]);
 
-        return back()->with('error', 'Failed to update order.');
-    }
-}
+        try {
+            DB::transaction(function () use ($order, $data, $request) {
 
+                $order->update([
+                    'billing_address'  => $data['billing_address'] ?? $order->billing_address,
+                    'shipping_address' => $data['shipping_address'] ?? $order->shipping_address,
+                ]);
+
+                $order->items()->delete();
+
+                $subTotal = 0;
+                $taxTotal = 0;
+
+                foreach ($data['items'] as $row) {
+                    $product = Product::findOrFail($row['product_id']);
+
+                    $price = $product->price;
+                    $qty   = $row['qty'];
+
+                    $line    = $price * $qty;
+                    $taxRate = $product->gst_percent ?? 0;
+                    $lineTax = ($line * $taxRate) / 100;
+
+                    $order->items()->create([
+                        'product_id'   => $product->id,
+                        'product_name' => $product->name,
+                        'price'        => $price,
+                        'quantity'     => $qty,
+                        'tax_rate'     => $taxRate,
+                        'tax_amount'   => $lineTax,
+                        'total'        => $line + $lineTax,
+                    ]);
+
+                    $subTotal += $line;
+                    $taxTotal += $lineTax;
+                }
+
+                $discount = (float) ($request->input('discount_amount') ?? 0);
+
+                $order->update([
+                    'sub_total'       => $subTotal,
+                    'tax_amount'      => $taxTotal,
+                    'discount_amount' => $discount,
+                    'grand_total'     => max(0, $subTotal + $taxTotal - $discount),
+                ]);
+            });
+
+            return redirect()->route('orders.show', $order)->with('success', 'Order updated successfully.');
+
+        } catch (\Throwable $e) {
+            Log::error('Order update failed', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Failed to update order.');
+        }
+    }
 
     public function destroy(Order $order)
     {
@@ -362,8 +346,6 @@ class OrderController extends Controller
 
         $order->delete();
 
-        return redirect()
-            ->route('orders.index')
-            ->with('success', 'Order deleted.');
+        return redirect()->route('orders.index')->with('success', 'Order deleted.');
     }
 }
