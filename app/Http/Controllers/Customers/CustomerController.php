@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Customers\Concerns\CustomerValidation;
 
+
 class CustomerController extends Controller
 {
     use CustomerValidation;
@@ -86,17 +87,26 @@ class CustomerController extends Controller
     }
 
     public function update(Request $request, Customer $customer)
-    {
-        $data = $this->validatedCustomerData($request, $customer->id);
+{
+    $data = $this->validatedCustomerData($request, $customer->id);
 
-        $customer->update(array_merge($data, [
-            'updated_by' => auth()->id(),
-        ]));
+    $customer->update(array_merge($data, [
+        'updated_by' => auth()->id(),
+    ]));
 
+    // If main Update Customer button was clicked
+    if ($request->has('final_submit')) {
         return redirect()
             ->route('customers.index')
             ->with('success', 'Customer updated successfully.');
     }
+
+    // Otherwise stay on the same edit page
+    return redirect()
+        ->route('customers.edit', $customer)
+        ->with('success', 'Customer details updated.');
+}
+
 
     public function destroy(Customer $customer)
     {

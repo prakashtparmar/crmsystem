@@ -1,27 +1,74 @@
 <x-layouts.app>
     <!-- Breadcrumbs -->
-    <div class="mb-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
-        <a href="{{ route('dashboard') }}" class="text-blue-600 dark:text-blue-400 hover:underline">{{ __('Dashboard') }}</a>
-        <span class="mx-2">›</span>
-        <a href="{{ route('customers.index') }}" class="text-blue-600 dark:text-blue-400 hover:underline">{{ __('Customers') }}</a>
-        <span class="mx-2">›</span>
-        <span>{{ __('Edit') }}</span>
+    <div class="mb-6 flex items-center text-sm">
+        <a href="{{ route('dashboard') }}"
+           class="text-blue-600 dark:text-blue-400 hover:underline">{{ __('Dashboard') }}</a>
+
+        <svg class="h-4 w-4 mx-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+
+        <a href="{{ route('customers.index') }}"
+           class="text-blue-600 dark:text-blue-400 hover:underline">{{ __('Customers') }}</a>
+
+        <svg class="h-4 w-4 mx-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+
+        <span class="text-gray-500 dark:text-gray-400">{{ __('Edit') }}</span>
     </div>
 
-    <div class="mb-6">
-        <h1 class="text-xl font-semibold text-gray-800 dark:text-gray-100">{{ __('Edit Customer') }}</h1>
-        <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('Update customer information') }}</p>
+<!-- Header -->
+<div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            {{ __('Edit Customer') }}
+        </h1>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            {{ __('Update customer information') }}
+        </p>
     </div>
 
-    <div class="max-w-6xl">
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-base font-medium text-gray-800 dark:text-gray-100">{{ __('Customer Details') }}</h2>
+    <div class="flex items-center gap-2">
+        <a href="{{ route('customers.show', $customer) }}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl
+                  bg-blue-600 text-white text-sm font-medium
+                  hover:bg-blue-700 shadow-md">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4v16m8-8H4" />
+            </svg>
+            {{ __('Create Order') }}
+        </a>
+    </div>
+</div>
+
+
+    <div class="max-w-7xl">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                    {{ __('Customer Details') }}
+                </h2>
             </div>
 
-            <div class="p-4">
+            <div class="p-6 space-y-6">
+
+                {{-- Flash Messages --}}
+                @if (session('success'))
+                    <div class="rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 p-4 text-sm">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 p-4 text-sm">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 @if ($errors->any())
-                    <div class="mb-4 p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
+                    <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 p-4 text-sm">
                         <ul class="list-disc list-inside space-y-1">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -34,184 +81,28 @@
                     @csrf
                     @method('PUT')
 
-                    <!-- Basic + Classification -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <section class="space-y-3">
-                            <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Basic Information</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <x-forms.input label="First Name" name="first_name" value="{{ old('first_name', $customer->first_name) }}" required />
-                                <x-forms.input label="Last Name" name="last_name" value="{{ old('last_name', $customer->last_name) }}" />
-                                <x-forms.input label="Display Name" name="display_name" value="{{ old('display_name', $customer->display_name) }}" />
-                                <x-forms.input label="Mobile" name="mobile" value="{{ old('mobile', $customer->mobile) }}" required />
-                                <x-forms.input label="Email" name="email" type="email" value="{{ old('email', $customer->email) }}" />
-                            </div>
-                        </section>
 
-                        <section class="space-y-3">
-                            <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Classification</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div class="flex flex-col">
-                                    <label class="block text-sm font-medium mb-1">Type</label>
-                                    <select name="type" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                                        @foreach (['farmer','buyer','vendor','dealer'] as $t)
-                                            <option value="{{ $t }}" @selected(old('type', $customer->type) == $t)>{{ ucfirst($t) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
 
-                                <div class="flex flex-col">
-                                    <label class="block text-sm font-medium mb-1">Category</label>
-                                    <select name="category" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                                        <option value="individual" @selected(old('category', $customer->category) === 'individual')>Individual</option>
-                                        <option value="business" @selected(old('category', $customer->category) === 'business')>Business</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
+                    @include('customers.partials.basic', ['customer' => $customer])
+                    @include('customers.partials.address', ['customer' => $customer])
+                    @include('customers.partials.agriculture', ['customer' => $customer])
+                    @include('customers.partials.reference', ['customer' => $customer])
+                    @include('customers.partials.financial', ['customer' => $customer])
+                    @include('customers.partials.status', ['customer' => $customer])
+                    @include('customers.partials.classification', ['customer' => $customer])
+                    @include('customers.partials.location', ['customer' => $customer])
+                    @include('customers.partials.business', ['customer' => $customer])
 
-                    <!-- Address -->
-                    <section class="space-y-1.5">
-                        <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Address</h3>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                            <div class="col-span-1 sm:col-span-2 lg:col-span-2">
-                                <x-forms.input label="Address Line 1" name="address_line1" value="{{ old('address_line1', $customer->address_line1) }}" />
-                            </div>
-
-                            <div class="col-span-1 sm:col-span-2 lg:col-span-2">
-                                <x-forms.input label="Address Line 2" name="address_line2" value="{{ old('address_line2', $customer->address_line2) }}" />
-                            </div>
-
-                            <x-forms.input label="Village" name="village" value="{{ old('village', $customer->village) }}" />
-                            <x-forms.input label="Taluka" name="taluka" value="{{ old('taluka', $customer->taluka) }}" />
-                            <x-forms.input label="District" name="district" value="{{ old('district', $customer->district) }}" />
-                            <x-forms.input label="State" name="state" value="{{ old('state', $customer->state) }}" />
-                            <x-forms.input label="Country" name="country" value="{{ old('country', $customer->country) }}" />
-                            <x-forms.input label="Pincode" name="pincode" value="{{ old('pincode', $customer->pincode) }}" />
-                        </div>
-                    </section>
-
-                    <!-- Agriculture + Finance -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Agriculture -->
-                        <section class="space-y-2">
-                            <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Agriculture</h3>
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div class="w-full">
-                                    <x-forms.input label="Land Area" name="land_area" value="{{ old('land_area', $customer->land_area) }}" />
-                                </div>
-
-                                <div class="flex flex-col w-full">
-                                    <label class="block text-sm font-medium mb-1">Land Unit</label>
-                                    <select name="land_unit" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                                        @foreach (['acre','hectare','bigha'] as $u)
-                                            <option value="{{ $u }}" @selected(old('land_unit', $customer->land_unit) == $u)>
-                                                {{ ucfirst($u) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <!-- Primary Crops (Badges) -->
-                                <div class="md:col-span-3">
-                                    <label class="block text-sm font-medium mb-1">Primary Crops</label>
-                                    <div id="primary-box" class="flex flex-wrap gap-1 p-2 border rounded-md dark:border-gray-700 dark:bg-gray-900">
-                                        <input id="primary-input" type="text" list="crop-list"
-                                            class="flex-1 min-w-[120px] bg-transparent outline-none text-sm"
-                                            placeholder="Type crop & press Enter" />
-                                    </div>
-                                    <input type="hidden" name="primary_crops" id="primary-hidden"
-                                        value="{{ old('primary_crops', is_array($customer->primary_crops) ? implode(',', $customer->primary_crops) : $customer->primary_crops) }}">
-                                </div>
-
-                                <!-- Secondary Crops (Badges) -->
-                                <div class="md:col-span-3">
-                                    <label class="block text-sm font-medium mb-1">Secondary Crops</label>
-                                    <div id="secondary-box" class="flex flex-wrap gap-1 p-2 border rounded-md dark:border-gray-700 dark:bg-gray-900">
-                                        <input id="secondary-input" type="text" list="crop-list"
-                                            class="flex-1 min-w-[120px] bg-transparent outline-none text-sm"
-                                            placeholder="Type crop & press Enter" />
-                                    </div>
-                                    <input type="hidden" name="secondary_crops" id="secondary-hidden"
-                                        value="{{ old('secondary_crops', is_array($customer->secondary_crops) ? implode(',', $customer->secondary_crops) : $customer->secondary_crops) }}">
-                                </div>
-
-                                <div class="flex flex-col w-full">
-                                    <label class="block text-sm font-medium mb-1">Irrigation Type</label>
-                                    <select name="irrigation_type" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">
-                                        @foreach (['rainfed','canal','drip','sprinkler','borewell'] as $i)
-                                            <option value="{{ $i }}" @selected(old('irrigation_type', $customer->irrigation_type) == $i)>
-                                                {{ ucfirst($i) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-
-                            <datalist id="crop-list">
-                                <option value="Wheat">
-                                <option value="Rice">
-                                <option value="Cotton">
-                                <option value="Maize">
-                                <option value="Bajra">
-                                <option value="Jowar">
-                                <option value="Sugarcane">
-                                <option value="Groundnut">
-                                <option value="Soybean">
-                                <option value="Onion">
-                                <option value="Potato">
-                                <option value="Tomato">
-                            </datalist>
-                        </section>
-
-                        <!-- Financial -->
-                        <section class="space-y-2">
-                            <h3 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Financial</h3>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div class="w-full">
-                                    <x-forms.input label="Credit Limit" name="credit_limit" value="{{ old('credit_limit', $customer->credit_limit) }}" />
-                                </div>
-
-                                <div class="w-full">
-                                    <x-forms.input label="Outstanding Balance" name="outstanding_balance" value="{{ old('outstanding_balance', $customer->outstanding_balance) }}" />
-                                </div>
-
-                                <div class="w-full">
-                                    <x-forms.input label="Credit Valid Till" name="credit_valid_till" type="date" value="{{ old('credit_valid_till', $customer->credit_valid_till) }}" />
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-
-                    <!-- Status -->
-                    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <textarea name="internal_notes" rows="2" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900">{{ old('internal_notes', $customer->internal_notes) }}</textarea>
-
-                        <div class="space-y-2 pt-1">
-                            <label class="flex items-center gap-2">
-                                <input type="checkbox" name="is_active" value="1" class="rounded" @checked(old('is_active', $customer->is_active))>
-                                <span class="text-sm">Active</span>
-                            </label>
-                            <label class="flex items-center gap-2">
-                                <input type="checkbox" name="is_blacklisted" value="1" class="rounded" @checked(old('is_blacklisted', $customer->is_blacklisted))>
-                                <span class="text-sm">Blacklisted</span>
-                            </label>
-                            <label class="flex items-center gap-2">
-                                <input type="checkbox" name="kyc_completed" value="1" class="rounded" @checked(old('kyc_completed', $customer->kyc_completed))>
-                                <span class="text-sm">KYC Completed</span>
-                            </label>
-                        </div>
-                    </section>
-
-                    <!-- Actions -->
-                    <div class="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <a href="{{ route('customers.index') }}" class="px-3 py-1.5 rounded-md border text-sm">
+                    <!-- Bottom Actions (optional, keep or remove) -->
+                    <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <a href="{{ route('customers.index') }}"
+                           class="px-4 py-2 rounded-xl border text-sm text-gray-700 dark:text-gray-300
+                                  hover:bg-gray-50 dark:hover:bg-gray-700">
                             {{ __('Cancel') }}
                         </a>
-                        <x-button type="primary" class="px-4 py-1.5 text-sm">
+
+                        <x-button type="primary" name="final_submit" value="1"
+                                  class="px-6 py-2 text-sm shadow-md">
                             {{ __('Update Customer') }}
                         </x-button>
                     </div>
@@ -220,58 +111,5 @@
         </div>
     </div>
 
-    <script>
-        function tagInput(boxId, inputId, hiddenId) {
-            const box = document.getElementById(boxId);
-            const input = document.getElementById(inputId);
-            const hidden = document.getElementById(hiddenId);
-
-            let items = hidden.value ? hidden.value.split(',').filter(Boolean) : [];
-
-            function render() {
-                box.querySelectorAll('.tag').forEach(t => t.remove());
-                items.forEach((c, i) => {
-                    const tag = document.createElement('span');
-                    tag.className =
-                        'tag px-2 py-0.5 text-xs rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 flex items-center gap-1';
-                    tag.innerHTML = `${c} <button type="button" data-i="${i}" class="font-bold">×</button>`;
-                    box.insertBefore(tag, input);
-                });
-                hidden.value = items.join(',');
-            }
-
-            function addItem(value) {
-                const v = value.trim();
-                if (!v) return;
-                if (!items.includes(v)) {
-                    items.push(v);
-                    render();
-                }
-                input.value = '';
-            }
-
-            input.addEventListener('keydown', e => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addItem(input.value);
-                }
-            });
-
-            input.addEventListener('change', () => {
-                addItem(input.value);
-            });
-
-            box.addEventListener('click', e => {
-                if (e.target.tagName === 'BUTTON') {
-                    items.splice(e.target.dataset.i, 1);
-                    render();
-                }
-            });
-
-            render();
-        }
-
-        tagInput('primary-box', 'primary-input', 'primary-hidden');
-        tagInput('secondary-box', 'secondary-input', 'secondary-hidden');
-    </script>
+    @include('customers.partials.scripts')
 </x-layouts.app>

@@ -268,21 +268,89 @@ class OrderController extends Controller
 }
 
 
-    public function update(Request $request, Order $order)
-    {
-        $user = auth()->user();
+   public function update(Request $request, Order $order)
+{
+    $user = auth()->user();
 
-        if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
-            abort_unless($order->created_by === $user->id, 403);
-        }
-
-        $order->update($request->only([
-            'billing_address',
-            'shipping_address',
-        ]));
-
-        return back()->with('success', 'Order updated.');
+    if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
+        abort_unless($order->created_by === $user->id, 403);
     }
+
+    $items = array_values(array_filter(
+        $request->input('items', []),
+        fn ($row) => !empty($row['product_id']) && !empty($row['qty'])
+    ));
+
+    $request->merge(['items' => $items]);
+
+    $data = $request->validate([
+        'billing_address'        => 'nullable|string',
+        'shipping_address'       => 'nullable|string',
+        'items'                  => 'required|array|min:1',
+        'items.*.product_id'     => 'required|exists:products,id',
+        'items.*.qty'            => 'required|numeric|min:1',
+    ]);
+
+    try {
+        DB::transaction(function () use ($order, $data) {
+
+            // Update addresses
+            $order->update([
+                'billing_address'  => $data['billing_address'] ?? $order->billing_address,
+                'shipping_address' => $data['shipping_address'] ?? $order->shipping_address,
+            ]);
+
+            // Remove old items
+            $order->items()->delete();
+
+            $subTotal = 0;
+            $taxTotal = 0;
+
+            foreach ($data['items'] as $row) {
+                $product = Product::findOrFail($row['product_id']);
+
+                $price = $product->price;
+                $qty   = $row['qty'];
+
+                $line    = $price * $qty;
+                $taxRate = $product->gst_percent ?? 0;
+                $lineTax = ($line * $taxRate) / 100;
+
+                $order->items()->create([
+                    'product_id'   => $product->id,
+                    'product_name' => $product->name,
+                    'price'        => $price,
+                    'quantity'     => $qty,
+                    'tax_rate'     => $taxRate,
+                    'tax_amount'   => $lineTax,
+                    'total'        => $line + $lineTax,
+                ]);
+
+                $subTotal += $line;
+                $taxTotal += $lineTax;
+            }
+
+            $order->update([
+                'sub_total'   => $subTotal,
+                'tax_amount'  => $taxTotal,
+                'grand_total' => $subTotal + $taxTotal,
+            ]);
+        });
+
+        return redirect()
+            ->route('orders.show', $order)
+            ->with('success', 'Order updated successfully.');
+
+    } catch (\Throwable $e) {
+        Log::error('Order update failed', [
+            'order_id' => $order->id,
+            'error' => $e->getMessage(),
+        ]);
+
+        return back()->with('error', 'Failed to update order.');
+    }
+}
+
 
     public function destroy(Order $order)
     {

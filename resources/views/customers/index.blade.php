@@ -28,33 +28,31 @@
     </div>
 
     {{-- Flash & Validation Messages --}}
-@if (session('success'))
-    <div class="mb-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 p-4 text-sm">
-        {{ session('success') }}
-    </div>
-@endif
+    @if (session('success'))
+        <div class="mb-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 p-4 text-sm">
+            {{ session('success') }}
+        </div>
+    @endif
 
-@if (session('error'))
-    <div class="mb-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 p-4 text-sm">
-        {{ session('error') }}
-    </div>
-@endif
+    @if (session('error'))
+        <div class="mb-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 p-4 text-sm">
+            {{ session('error') }}
+        </div>
+    @endif
 
-@if ($errors->any())
-    <div class="mb-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 p-4 text-sm">
-        <ul class="list-disc list-inside space-y-1">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-
+    @if ($errors->any())
+        <div class="mb-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 p-4 text-sm">
+            <ul class="list-disc list-inside space-y-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     @can('customers.view')
         <div class="p-6">
-            <div
-                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 overflow-visible">
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 overflow-visible">
                 <table id="customersTable" class="w-full text-sm">
                     <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
                         <tr>
@@ -67,22 +65,9 @@
                             <th class="px-3 py-2">Code</th>
                             <th class="px-3 py-2">Name</th>
                             <th class="px-3 py-2">Mobile</th>
-                            <th class="px-3 py-2">Email</th>
                             <th class="px-3 py-2">Type</th>
-                            <th class="px-3 py-2">Category</th>
-                            <th class="px-3 py-2">Company</th>
-                            <th class="px-3 py-2">GST</th>
-                            <th class="px-3 py-2">PAN</th>
                             <th class="px-3 py-2">Village</th>
-                            <th class="px-3 py-2">Taluka</th>
                             <th class="px-3 py-2">District</th>
-                            <th class="px-3 py-2">State</th>
-                            <th class="px-3 py-2">Pincode</th>
-                            <th class="px-3 py-2">Land Area</th>
-                            <th class="px-3 py-2">Crops</th>
-                            <th class="px-3 py-2">Credit</th>
-                            <th class="px-3 py-2">Outstanding</th>
-                            <th class="px-3 py-2">KYC</th>
                             <th class="px-3 py-2">Status</th>
                             <th class="px-3 py-2">Created</th>
 
@@ -105,56 +90,25 @@
                                 <td class="px-3 py-2 text-gray-500">{{ $customer->customer_code }}</td>
 
                                 <td class="px-3 py-2 font-medium">
-                                    @can('customers.view')
-                                        <a href="{{ route('customers.show', $customer) }}"
-                                            class="text-blue-600 dark:text-blue-400 hover:underline">
-                                            {{ $customer->full_name }}
-                                        </a>
-                                    @else
-                                        {{ $customer->full_name }}
-                                    @endcan
+                                    @can('customers.edit')
+    <a href="{{ route('customers.edit', $customer) }}"
+        class="text-blue-600 dark:text-blue-400 hover:underline">
+        {{ $customer->full_name }}
+    </a>
+@else
+    {{ $customer->full_name }}
+@endcan
+
                                 </td>
 
                                 <td class="px-3 py-2">{{ $customer->mobile }}</td>
-                                <td class="px-3 py-2">{{ $customer->email ?? '—' }}</td>
                                 <td class="px-3 py-2 capitalize">{{ $customer->type }}</td>
-                                <td class="px-3 py-2 capitalize">{{ $customer->category }}</td>
-                                <td class="px-3 py-2">{{ $customer->company_name ?? '—' }}</td>
-                                <td class="px-3 py-2">{{ $customer->gst_number ?? '—' }}</td>
-                                <td class="px-3 py-2">{{ $customer->pan_number ?? '—' }}</td>
                                 <td class="px-3 py-2">{{ $customer->village ?? '—' }}</td>
-                                <td class="px-3 py-2">{{ $customer->taluka ?? '—' }}</td>
                                 <td class="px-3 py-2">{{ $customer->district ?? '—' }}</td>
-                                <td class="px-3 py-2">{{ $customer->state ?? '—' }}</td>
-                                <td class="px-3 py-2">{{ $customer->pincode ?? '—' }}</td>
 
                                 <td class="px-3 py-2">
-                                    {{ $customer->land_area ? $customer->land_area . ' ' . $customer->land_unit : '—' }}
-                                </td>
-
-                                <td class="px-3 py-2">
-                                    @if ($customer->primary_crops)
-                                        {{ is_array($customer->primary_crops) ? implode(', ', $customer->primary_crops) : $customer->primary_crops }}
-                                    @else
-                                        —
-                                    @endif
-                                </td>
-
-                                <td class="px-3 py-2">{{ number_format($customer->credit_limit, 2) }}</td>
-                                <td class="px-3 py-2">{{ number_format($customer->outstanding_balance, 2) }}</td>
-
-                                <td class="px-3 py-2">
-                                    <span
-                                        class="px-2 py-1 text-xs rounded-full
-                                    {{ $customer->kyc_completed ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
-                                        {{ $customer->kyc_completed ? 'Verified' : 'Pending' }}
-                                    </span>
-                                </td>
-
-                                <td class="px-3 py-2">
-                                    <span
-                                        class="px-2 py-1 text-xs rounded-full
-                                    {{ $customer->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                    <span class="px-2 py-1 text-xs rounded-full
+                                        {{ $customer->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                         {{ $customer->is_active ? 'Active' : 'Inactive' }}
                                     </span>
                                 </td>
@@ -170,28 +124,24 @@
                                                 class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
                                                 <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor"
                                                     viewBox="0 0 20 20">
-                                                    <path
-                                                        d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6-2a2 2 0 100 4 2 2 0 000-4zm4-2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                    <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6-2a2 2 0 100 4 2 2 0 000-4zm4-2a2 2 0 11-4 0 2 2 0 014 0z" />
                                                 </svg>
                                             </button>
 
                                             <div x-cloak x-show="open" @click.away="open = false" x-transition
                                                 class="absolute right-0 mt-2 w-36 rounded-md bg-white dark:bg-gray-800 shadow-xl ring-1 ring-black/10 z-50">
-
                                                 @can('customers.view')
                                                     <a href="{{ route('customers.show', $customer) }}"
                                                         class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
                                                         View
                                                     </a>
                                                 @endcan
-
                                                 @can('customers.edit')
                                                     <a href="{{ route('customers.edit', $customer) }}"
                                                         class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
                                                         Edit
                                                     </a>
                                                 @endcan
-
                                                 @can('customers.delete')
                                                     <form action="{{ route('customers.destroy', $customer) }}" method="POST"
                                                         onsubmit="return confirm('Delete this customer?');">
@@ -213,15 +163,6 @@
                 </table>
             </div>
         </div>
-    @else
-        <div class="p-6">
-            <div
-                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-6 text-center">
-                <p class="text-gray-600 dark:text-gray-400">
-                    You do not have permission to view customers.
-                </p>
-            </div>
-        </div>
     @endcan
 
     @push('styles')
@@ -238,7 +179,6 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-
                 let buttons = [];
 
                 @can('customers.export')
