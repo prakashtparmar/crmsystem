@@ -15,7 +15,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        // Base order query using permissions (not roles)
+        // Base order query (permission aware)
         $orderQuery = Order::query()
             ->when(
                 $user->can('orders.view_own') && ! $user->can('orders.view_all'),
@@ -23,8 +23,7 @@ class DashboardController extends Controller
             );
 
         /* ------------------------------------------------------------
-           Apply Date Filters from Dashboard UI
-           Default = today
+           Apply Date Filters
         ------------------------------------------------------------ */
         $range = request('range', 'today');
 
@@ -59,12 +58,11 @@ class DashboardController extends Controller
         };
 
         /* ------------------------------------------------------------
-           Core Totals
+           Core Totals (Filtered)
         ------------------------------------------------------------ */
         $totalUsers  = User::count();
         $totalOrders = (clone $orderQuery)->count();
 
-        // Revenue: include all statuses except cancelled
         $totalRevenue = (clone $orderQuery)
             ->where('status', '!=', 'cancelled')
             ->sum('grand_total');
@@ -72,31 +70,39 @@ class DashboardController extends Controller
         $totalVisitors = 0;
 
         /* ------------------------------------------------------------
-           This Week Stats (permission aware)
+           Period Stats (same filter as totals)
+        ------------------------------------------------------------ */
+        $periodOrders  = $totalOrders;
+        $periodRevenue = $totalRevenue;
+
+        $periodUsers = match ($range) {
+            'today' => User::whereDate('created_at', now())->count(),
+            'yesterday' => User::whereDate('created_at', now()->copy()->subDay())->count(),
+            'week' => User::whereBetween('created_at', [now()->startOfWeek(), now()])->count(),
+            'month' => User::whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)->count(),
+            'year' => User::whereYear('created_at', now()->year)->count(),
+            default => 0,
+        };
+
+        /* ------------------------------------------------------------
+           Weekly Comparison (optional)
         ------------------------------------------------------------ */
         $weekQuery = Order::query()
             ->when(
                 $user->can('orders.view_own') && ! $user->can('orders.view_all'),
                 fn ($q) => $q->where('created_by', $user->id)
             )
-            ->whereBetween('created_at', [
-                now()->startOfWeek(),
-                now(),
-            ]);
+            ->whereBetween('created_at', [now()->startOfWeek(), now()]);
 
         $thisWeek = [
             'users' => User::where('created_at', '>=', now()->startOfWeek())->count(),
-
             'orders' => (clone $weekQuery)->count(),
-
             'revenue' => (clone $weekQuery)
                 ->where('status', '!=', 'cancelled')
                 ->sum('grand_total'),
         ];
 
-        /* ------------------------------------------------------------
-           Last Week Stats
-        ------------------------------------------------------------ */
         $lastWeekQuery = Order::query()
             ->when(
                 $user->can('orders.view_own') && ! $user->can('orders.view_all'),
@@ -121,7 +127,7 @@ class DashboardController extends Controller
         ];
 
         /* ------------------------------------------------------------
-           Additional Dashboard Metrics
+           Additional Metrics
         ------------------------------------------------------------ */
         $totalCustomers = Customer::count();
         $totalProducts  = Product::count();
@@ -139,6 +145,9 @@ class DashboardController extends Controller
             'totalOrders',
             'totalRevenue',
             'totalVisitors',
+            'periodUsers',
+            'periodOrders',
+            'periodRevenue',
             'thisWeek',
             'lastWeek',
             'totalCustomers',
