@@ -7,7 +7,6 @@ use App\Models\Order;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Campaign;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -23,69 +22,99 @@ class DashboardController extends Controller
                 fn ($q) => $q->where('created_by', $user->id)
             );
 
-        // Core totals
-        $totalUsers  = User::count(); // global
+        /* ------------------------------------------------------------
+           Apply Date Filters from Dashboard UI
+        ------------------------------------------------------------ */
+        if (request('range')) {
+            match (request('range')) {
+                'today' => $orderQuery->whereDate('created_at', today()),
+
+                'yesterday' => $orderQuery->whereDate('created_at', today()->subDay()),
+
+                'week' => $orderQuery->whereBetween('created_at', [
+                    now()->startOfWeek(),
+                    now()->endOfWeek(),
+                ]),
+
+                'month' => $orderQuery
+                    ->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year),
+
+                'year' => $orderQuery->whereYear('created_at', now()->year),
+
+                'custom' => $orderQuery
+                    ->when(request('from'), fn ($q) =>
+                        $q->whereDate('created_at', '>=', request('from'))
+                    )
+                    ->when(request('to'), fn ($q) =>
+                        $q->whereDate('created_at', '<=', request('to'))
+                    ),
+
+                default => null,
+            };
+        }
+
+        /* ------------------------------------------------------------
+           Core Totals
+        ------------------------------------------------------------ */
+        $totalUsers  = User::count();
         $totalOrders = (clone $orderQuery)->count();
 
-        // Revenue: include all except cancelled & draft
+        // Revenue: exclude draft & cancelled
         $totalRevenue = (clone $orderQuery)
-            ->whereIn('status', ['draft','confirmed', 'processing', 'shipped', 'delivered'])
+            ->whereNotIn('status', ['draft', 'cancelled'])
             ->sum('grand_total');
 
-        // Visitors (until you implement tracking)
         $totalVisitors = 0;
 
-        // This week stats
+        /* ------------------------------------------------------------
+           This Week Stats (always real current week)
+        ------------------------------------------------------------ */
         $thisWeek = [
-            'users' => User::where('created_at', '>=', Carbon::now()->startOfWeek())->count(),
+            'users' => User::where('created_at', '>=', now()->startOfWeek())->count(),
 
-            'orders' => (clone $orderQuery)
-                ->where('created_at', '>=', Carbon::now()->startOfWeek())
-                ->count(),
+            'orders' => Order::where('created_at', '>=', now()->startOfWeek())->count(),
 
-            'revenue' => (clone $orderQuery)
-                ->whereIn('status', ['confirmed', 'processing', 'shipped', 'delivered'])
-                ->where('created_at', '>=', Carbon::now()->startOfWeek())
+            'revenue' => Order::whereNotIn('status', ['cancelled'])
+                ->where('created_at', '>=', now()->startOfWeek())
                 ->sum('grand_total'),
         ];
 
-        // Last week stats
+        /* ------------------------------------------------------------
+           Last Week Stats
+        ------------------------------------------------------------ */
         $lastWeek = [
             'users' => User::whereBetween('created_at', [
-                Carbon::now()->subWeek()->startOfWeek(),
-                Carbon::now()->subWeek()->endOfWeek(),
+                now()->subWeek()->startOfWeek(),
+                now()->subWeek()->endOfWeek(),
             ])->count(),
 
-            'orders' => (clone $orderQuery)
-                ->whereBetween('created_at', [
-                    Carbon::now()->subWeek()->startOfWeek(),
-                    Carbon::now()->subWeek()->endOfWeek(),
-                ])->count(),
+            'orders' => Order::whereBetween('created_at', [
+                now()->subWeek()->startOfWeek(),
+                now()->subWeek()->endOfWeek(),
+            ])->count(),
 
-            'revenue' => (clone $orderQuery)
-                ->whereIn('status', ['confirmed', 'processing', 'shipped', 'delivered'])
+            'revenue' => Order::whereNotIn('status', ['draft', 'cancelled'])
                 ->whereBetween('created_at', [
-                    Carbon::now()->subWeek()->startOfWeek(),
-                    Carbon::now()->subWeek()->endOfWeek(),
+                    now()->subWeek()->startOfWeek(),
+                    now()->subWeek()->endOfWeek(),
                 ])
                 ->sum('grand_total'),
         ];
 
-        /* -----------------------------------------------------------------
-           Additional fields for enhanced dashboard
-        ----------------------------------------------------------------- */
-
+        /* ------------------------------------------------------------
+           Additional Dashboard Metrics
+        ------------------------------------------------------------ */
         $totalCustomers = Customer::count();
         $totalProducts  = Product::count();
 
-        // Low stock based on product_stocks
         $lowStockCount = DB::table('product_stocks')
             ->selectRaw('product_id, SUM(quantity - reserved_qty) as available_qty')
             ->groupBy('product_id')
             ->havingRaw('SUM(quantity - reserved_qty) <= ?', [10])
+            ->get()
             ->count();
 
-        // Campaigns
         $activeCampaigns = Campaign::count();
 
         return view('dashboard', compact(

@@ -152,6 +152,7 @@
                                 <th class="px-4 py-2 text-left">Product</th>
                                 <th class="px-4 py-2 text-right">Qty</th>
                                 <th class="px-4 py-2 text-right">Price</th>
+                                <th class="px-4 py-2 text-right">Tax</th>
                                 <th class="px-4 py-2 text-right">Total</th>
                             </tr>
                         </thead>
@@ -161,17 +162,48 @@
                                     <td class="px-4 py-2">{{ $item->product_name }}</td>
                                     <td class="px-4 py-2 text-right">{{ $item->quantity }}</td>
                                     <td class="px-4 py-2 text-right">{{ number_format($item->price, 2) }}</td>
-                                    <td class="px-4 py-2 text-right font-semibold">{{ number_format($item->total, 2) }}
+
+                                    <td class="px-4 py-2 text-right">
+                                        {{ $item->tax_rate }}%
+                                        <span class="block text-[11px] text-gray-500">
+                                            ₹{{ number_format($item->tax_amount, 2) }}
+                                        </span>
+                                    </td>
+
+                                    <td class="px-4 py-2 text-right font-semibold">
+                                        {{ number_format($item->total, 2) }}
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
+
                 </div>
 
-                <div class="mt-4 text-right text-lg font-bold">
-                    Grand Total: ₹{{ number_format($order->grand_total, 2) }}
+                <div class="mt-4 max-w-sm ml-auto text-sm space-y-1">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Sub Total</span>
+                        <span>₹{{ number_format($order->sub_total, 2) }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Tax</span>
+                        <span>₹{{ number_format($order->tax_amount, 2) }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Discount</span>
+                        <span class="text-red-600">
+                            − ₹{{ number_format($order->discount_amount ?? 0, 2) }}
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between font-bold text-base border-t pt-2 mt-2">
+                        <span>Grand Total</span>
+                        <span>₹{{ number_format($order->grand_total, 2) }}</span>
+                    </div>
                 </div>
+
             </div>
 
             @if ($shipment)
