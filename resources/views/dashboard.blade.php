@@ -9,45 +9,45 @@
 
     <!-- Filter Bar -->
     <form method="GET" class="mb-6">
-        <div class="flex flex-wrap items-end gap-2
-                    bg-white dark:bg-gray-800
-                    border-2 border-gray-200 dark:border-gray-700
-                    rounded-xl p-3 shadow-sm">
+    <div class="flex flex-wrap items-end gap-2
+                bg-white dark:bg-gray-800
+                border-2 border-gray-200 dark:border-gray-700
+                rounded-xl p-3 shadow-sm">
 
-            <select name="range"
-                class="rounded-lg text-sm
-                       border-2 border-gray-300 dark:border-gray-600
-                       dark:bg-gray-900 px-3 py-2
-                       focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+        <select name="range"
+            class="rounded-lg text-sm
+                   border-2 border-gray-300 dark:border-gray-600
+                   dark:bg-gray-900 px-3 py-2
+                   focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
 
-                <option value="" @selected(!request()->has('range'))>All Time</option>
-                <option value="today" @selected(request('range') === 'today')>Today</option>
-                <option value="yesterday" @selected(request('range') === 'yesterday')>Yesterday</option>
-                <option value="week" @selected(request('range') === 'week')>This Week</option>
-                <option value="month" @selected(request('range') === 'month')>This Month</option>
-                <option value="year" @selected(request('range') === 'year')>This Year</option>
-            </select>
+            <option value="today" @selected(request('range', 'today') === 'today')>Today</option>
+            <option value="yesterday" @selected(request('range') === 'yesterday')>Yesterday</option>
+            <option value="week" @selected(request('range') === 'week')>This Week</option>
+            <option value="month" @selected(request('range') === 'month')>This Month</option>
+            <option value="year" @selected(request('range') === 'year')>This Year</option>
+        </select>
 
-            <button
-                class="px-5 py-2 rounded-lg text-sm font-medium
-                       bg-indigo-600 text-white
-                       border border-indigo-600
-                       hover:bg-indigo-700 hover:border-indigo-700
-                       focus:ring-2 focus:ring-indigo-500
-                       transition">
-                Apply
-            </button>
+        <button
+            class="px-5 py-2 rounded-lg text-sm font-medium
+                   bg-indigo-600 text-white
+                   border border-indigo-600
+                   hover:bg-indigo-700 hover:border-indigo-700
+                   focus:ring-2 focus:ring-indigo-500
+                   transition">
+            Apply
+        </button>
 
-            <a href="{{ route('dashboard') }}"
-               class="px-4 py-2 rounded-lg text-sm
-                      border-2 border-gray-300 dark:border-gray-600
-                      text-gray-700 dark:text-gray-200
-                      hover:bg-gray-100 dark:hover:bg-gray-700
-                      transition">
-                Reset
-            </a>
-        </div>
-    </form>
+        <a href="{{ route('dashboard') }}"
+           class="px-4 py-2 rounded-lg text-sm
+                  border-2 border-gray-300 dark:border-gray-600
+                  text-gray-700 dark:text-gray-200
+                  hover:bg-gray-100 dark:hover:bg-gray-700
+                  transition">
+            Reset
+        </a>
+    </div>
+</form>
+
 
     <!-- KPI Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

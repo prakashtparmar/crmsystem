@@ -24,38 +24,39 @@ class DashboardController extends Controller
 
         /* ------------------------------------------------------------
            Apply Date Filters from Dashboard UI
+           Default = today
         ------------------------------------------------------------ */
-        if (request('range')) {
-            match (request('range')) {
-                'today' => $orderQuery->whereDate('created_at', now()->toDateString()),
+        $range = request('range', 'today');
 
-                'yesterday' => $orderQuery->whereDate(
-                    'created_at',
-                    now()->subDay()->toDateString()
+        match ($range) {
+            'today' => $orderQuery->whereDate('created_at', now()->toDateString()),
+
+            'yesterday' => $orderQuery->whereDate(
+                'created_at',
+                now()->copy()->subDay()->toDateString()
+            ),
+
+            'week' => $orderQuery->whereBetween('created_at', [
+                now()->startOfWeek(),
+                now(),
+            ]),
+
+            'month' => $orderQuery
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year),
+
+            'year' => $orderQuery->whereYear('created_at', now()->year),
+
+            'custom' => $orderQuery
+                ->when(request('from'), fn ($q) =>
+                    $q->whereDate('created_at', '>=', request('from'))
+                )
+                ->when(request('to'), fn ($q) =>
+                    $q->whereDate('created_at', '<=', request('to'))
                 ),
 
-                'week' => $orderQuery->whereBetween('created_at', [
-                    now()->startOfWeek(),
-                    now(),
-                ]),
-
-                'month' => $orderQuery
-                    ->whereMonth('created_at', now()->month)
-                    ->whereYear('created_at', now()->year),
-
-                'year' => $orderQuery->whereYear('created_at', now()->year),
-
-                'custom' => $orderQuery
-                    ->when(request('from'), fn ($q) =>
-                        $q->whereDate('created_at', '>=', request('from'))
-                    )
-                    ->when(request('to'), fn ($q) =>
-                        $q->whereDate('created_at', '<=', request('to'))
-                    ),
-
-                default => null,
-            };
-        }
+            default => null,
+        };
 
         /* ------------------------------------------------------------
            Core Totals
@@ -102,14 +103,14 @@ class DashboardController extends Controller
                 fn ($q) => $q->where('created_by', $user->id)
             )
             ->whereBetween('created_at', [
-                now()->subWeek()->startOfWeek(),
-                now()->subWeek()->endOfWeek(),
+                now()->copy()->subWeek()->startOfWeek(),
+                now()->copy()->subWeek()->endOfWeek(),
             ]);
 
         $lastWeek = [
             'users' => User::whereBetween('created_at', [
-                now()->subWeek()->startOfWeek(),
-                now()->subWeek()->endOfWeek(),
+                now()->copy()->subWeek()->startOfWeek(),
+                now()->copy()->subWeek()->endOfWeek(),
             ])->count(),
 
             'orders' => (clone $lastWeekQuery)->count(),
@@ -129,10 +130,9 @@ class DashboardController extends Controller
             ->selectRaw('product_id, SUM(quantity - reserved_qty) as available_qty')
             ->groupBy('product_id')
             ->havingRaw('SUM(quantity - reserved_qty) <= ?', [10])
-            ->get()
             ->count();
 
-        $activeCampaigns = Campaign::where('is_active', true)->count();
+        $activeCampaigns = Campaign::count();
 
         return view('dashboard', compact(
             'totalUsers',
