@@ -27,13 +27,16 @@ class DashboardController extends Controller
         ------------------------------------------------------------ */
         if (request('range')) {
             match (request('range')) {
-                'today' => $orderQuery->whereDate('created_at', today()),
+                'today' => $orderQuery->whereDate('created_at', now()->toDateString()),
 
-                'yesterday' => $orderQuery->whereDate('created_at', today()->subDay()),
+                'yesterday' => $orderQuery->whereDate(
+                    'created_at',
+                    now()->subDay()->toDateString()
+                ),
 
                 'week' => $orderQuery->whereBetween('created_at', [
                     now()->startOfWeek(),
-                    now()->endOfWeek(),
+                    now(),
                 ]),
 
                 'month' => $orderQuery
@@ -60,45 +63,59 @@ class DashboardController extends Controller
         $totalUsers  = User::count();
         $totalOrders = (clone $orderQuery)->count();
 
-        // Revenue: exclude draft & cancelled
+        // Revenue: include all statuses except cancelled
         $totalRevenue = (clone $orderQuery)
-            ->whereNotIn('status', ['draft', 'cancelled'])
+            ->where('status', '!=', 'cancelled')
             ->sum('grand_total');
 
         $totalVisitors = 0;
 
         /* ------------------------------------------------------------
-           This Week Stats (always real current week)
+           This Week Stats (permission aware)
         ------------------------------------------------------------ */
+        $weekQuery = Order::query()
+            ->when(
+                $user->can('orders.view_own') && ! $user->can('orders.view_all'),
+                fn ($q) => $q->where('created_by', $user->id)
+            )
+            ->whereBetween('created_at', [
+                now()->startOfWeek(),
+                now(),
+            ]);
+
         $thisWeek = [
             'users' => User::where('created_at', '>=', now()->startOfWeek())->count(),
 
-            'orders' => Order::where('created_at', '>=', now()->startOfWeek())->count(),
+            'orders' => (clone $weekQuery)->count(),
 
-            'revenue' => Order::whereNotIn('status', ['cancelled'])
-                ->where('created_at', '>=', now()->startOfWeek())
+            'revenue' => (clone $weekQuery)
+                ->where('status', '!=', 'cancelled')
                 ->sum('grand_total'),
         ];
 
         /* ------------------------------------------------------------
            Last Week Stats
         ------------------------------------------------------------ */
+        $lastWeekQuery = Order::query()
+            ->when(
+                $user->can('orders.view_own') && ! $user->can('orders.view_all'),
+                fn ($q) => $q->where('created_by', $user->id)
+            )
+            ->whereBetween('created_at', [
+                now()->subWeek()->startOfWeek(),
+                now()->subWeek()->endOfWeek(),
+            ]);
+
         $lastWeek = [
             'users' => User::whereBetween('created_at', [
                 now()->subWeek()->startOfWeek(),
                 now()->subWeek()->endOfWeek(),
             ])->count(),
 
-            'orders' => Order::whereBetween('created_at', [
-                now()->subWeek()->startOfWeek(),
-                now()->subWeek()->endOfWeek(),
-            ])->count(),
+            'orders' => (clone $lastWeekQuery)->count(),
 
-            'revenue' => Order::whereNotIn('status', ['draft', 'cancelled'])
-                ->whereBetween('created_at', [
-                    now()->subWeek()->startOfWeek(),
-                    now()->subWeek()->endOfWeek(),
-                ])
+            'revenue' => (clone $lastWeekQuery)
+                ->where('status', '!=', 'cancelled')
                 ->sum('grand_total'),
         ];
 
@@ -115,7 +132,7 @@ class DashboardController extends Controller
             ->get()
             ->count();
 
-        $activeCampaigns = Campaign::count();
+        $activeCampaigns = Campaign::where('is_active', true)->count();
 
         return view('dashboard', compact(
             'totalUsers',
