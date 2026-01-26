@@ -90,4 +90,10 @@ class Order extends Model
     {
         return max(0, $this->grand_total - $this->total_paid);
     }
+
+    public function codSlip()
+{
+    return $this->hasOne(CodSlip::class);
+}
+
 }

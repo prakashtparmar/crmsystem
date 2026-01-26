@@ -43,6 +43,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderReturnController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\CodSlipController;
 
 /*
 |--------------------------------------------------------------------------
@@ -139,8 +140,11 @@ Route::post(
 
 
 
+/* ================= COD Chalan ================= */
 
-
+Route::post('/orders/{order}/cod', [CodSlipController::class, 'store'])->name('cod.store');
+Route::get('/orders/{order}/cod/download', [CodSlipController::class, 'download'])->name('cod.download');
+Route::get('/orders/{order}/cod/print', [CodSlipController::class, 'print'])->name('cod.print');
 
 
 
