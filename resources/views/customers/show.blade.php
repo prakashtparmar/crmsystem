@@ -299,145 +299,143 @@
             </div>
          </div>
       </div>
-      <!-- QUICK ORDER + SUMMARY (Enhanced Card with Compact Summary) -->
-      <div
-         class="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-         <!-- Header -->
-         <div
-            class="px-6 py-4 bg-gradient-to-r from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 border-b flex items-center justify-between">
-            <div>
-               <h3 class="text-sm font-bold uppercase tracking-wider text-gray-800 dark:text-gray-200">
-                  Quick Order
-               </h3>
-               <p class="text-xs text-gray-500 mt-1">
-                  Create a new order instantly for this customer
-               </p>
-            </div>
-            <button type="button" id="toggleQuickOrder"
-               class="text-xs px-3 py-1 rounded-md border text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+  <!-- QUICK ORDER (Styled like Edit Order) -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b flex items-center justify-between">
+        <div>
+            <h3 class="text-sm font-bold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                Quick Order
+            </h3>
+            <p class="text-xs text-gray-500 mt-1">
+                Create a new order instantly for this customer
+            </p>
+        </div>
+        <button type="button" id="toggleQuickOrder"
+            class="text-xs px-3 py-1 rounded-md border text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
             Hide
-            </button>
-         </div>
-         <div id="quickOrderSection" class="p-6 space-y-5">
-            <div class="p-6 space-y-5">
-               <form action="{{ route('orders.store') }}" method="POST" class="space-y-5">
-                  @csrf
-                  <input type="hidden" name="customer_id" value="{{ $customer->id }}">
-                  <!-- Items -->
-                  <div>
-                     <h4 class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">
-                        Order Items
-                     </h4>
-                     <div id="items" class="space-y-3">
-                        <div
-                           class="item-row flex flex-col md:flex-row items-start md:items-end gap-4 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 hover:shadow-sm transition">
-                           <!-- Product -->
-                           <div class="w-full md:w-2/5">
-                              <label class="block text-xs text-gray-500 mb-1">Product</label>
-                              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                 <!-- Search -->
-                                 <input type="text" placeholder="Search name / SKU..."
-                                    class="product-search w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500">
-                                 <!-- Dropdown -->
-                                 <select name="items[0][product_id]"
-                                    class="product-select w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800 focus:ring-2 focus:ring-blue-500">
+        </button>
+    </div>
+
+    <div id="quickOrderSection" class="p-6 space-y-6">
+        <form action="{{ route('orders.store') }}" method="POST" class="space-y-6">
+            @csrf
+            <input type="hidden" name="customer_id" value="{{ $customer->id }}">
+
+            <!-- Items -->
+            <div>
+                <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 mb-3">
+                    Order Items
+                </h3>
+
+                <div id="items" class="space-y-3">
+                    <div class="item-row flex flex-col md:flex-row gap-4 p-4 rounded-xl border bg-white dark:bg-gray-900">
+
+                        <!-- Product -->
+                        <div class="w-full md:w-2/5">
+                            <label class="block text-xs text-gray-500 mb-1">Product</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <input type="text" placeholder="Search name / SKU..."
+                                    class="product-search w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-sm px-3 py-2">
+                                <select name="items[0][product_id]"
+                                    class="product-select w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800">
                                     <option value="">Select Product</option>
                                     @foreach ($products as $p)
-                                    <option value="{{ $p->id }}"
-                                       data-price="{{ $p->price ?? 0 }}"
-                                       data-tax="{{ $p->gst_percent }}"
-                                       data-sku="{{ $p->sku }}">
-                                       {{ $p->name }} ({{ $p->sku }})
-                                    </option>
+                                        <option value="{{ $p->id }}"
+                                            data-price="{{ $p->price ?? 0 }}"
+                                            data-tax="{{ $p->gst_percent }}"
+                                            data-sku="{{ $p->sku }}">
+                                            {{ $p->name }} ({{ $p->sku }})
+                                        </option>
                                     @endforeach
-                                 </select>
-                              </div>
-                           </div>
-                           <!-- Price -->
-                           <div class="w-full md:w-1/6">
-                              <label class="block text-xs text-gray-500 mb-1">Price</label>
-                              <input name="items[0][price]" readonly
-                                 class="price w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800 font-medium">
-                           </div>
-                           <!-- Qty -->
-                           <div class="w-full md:w-1/6">
-                              <label class="block text-xs text-gray-500 mb-1">Qty</label>
-                              <div class="flex items-center">
-                                 <button type="button"
-                                    class="qty-minus px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-l-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                 −
-                                 </button>
-                                 <input name="items[0][qty]" value="1" inputmode="numeric"
-                                    class="qty w-full text-center border-t border-b border-gray-300 dark:border-gray-700 dark:bg-gray-800">
-                                 <button type="button"
-                                    class="qty-plus px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-r-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                 +
-                                 </button>
-                              </div>
-                           </div>
-                           <!-- Total -->
-                           <div class="w-full md:w-1/6">
-                              <label class="block text-xs text-gray-500 mb-1">Total</label>
-                              <input name="items[0][total]" readonly
-                                 class="total w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800 font-bold text-blue-600">
-                           </div>
-                           <!-- Actions -->
-                           <div class="pt-5 md:pt-0 flex flex-col gap-1">
-                              <button type="button"
-                                 class="view-product text-xs text-blue-600 hover:underline">
-                              View
-                              </button>
-                              <button type="button"
-                                 class="remove-row text-xs text-red-600 hover:underline">
-                              Remove
-                              </button>
-                           </div>
-                           <input name="items[0][tax]" class="tax hidden">
+                                </select>
+                            </div>
                         </div>
-                     </div>
-                     <button type="button" id="addRow"
-                        class="mt-6 mb-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-medium
-                        text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                     + Add another item
-                     </button>
-                  </div>
-                  <!-- Compact Summary Bar (Polished) -->
-                  <div
-                     class="flex flex-col md:flex-row items-center gap-3 pt-3 border-t bg-gray-50 dark:bg-gray-900/40 rounded-xl px-4 py-2">
-                     <div
-                        class="flex items-center gap-2 w-full md:w-auto md:flex-1 justify-between md:justify-start">
-                        <span class="text-[11px] uppercase tracking-wide text-gray-500">Sub Total</span>
-                        <input id="sub_total" name="sub_total" readonly
-                           class="w-24 text-right rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-xs px-2 py-1">
-                     </div>
-                     <div class="hidden md:block h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
-                     <div
-                        class="flex items-center gap-2 w-full md:w-auto md:flex-1 justify-between md:justify-start">
-                        <span class="text-[11px] uppercase tracking-wide text-gray-500">Tax</span>
-                        <input id="tax_amount" name="tax_amount" readonly
-                           class="w-24 text-right rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-xs px-2 py-1">
-                     </div>
-                     <div class="hidden md:block h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
-                     <div
-                        class="flex items-center gap-2 w-full md:w-auto md:flex-1 justify-between md:justify-start">
-                        <span
-                           class="text-[11px] uppercase tracking-wide text-gray-700 dark:text-gray-300 font-semibold">
-                        Grand
-                        </span>
-                        <input id="grand_total" name="grand_total" readonly
-                           class="w-28 text-right rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-xs px-2 py-1 font-bold text-blue-600">
-                     </div>
-                  </div>
-                  <!-- Actions -->
-                  <div class="flex items-center justify-end gap-3 pt-2">
-                     <x-button type="primary" class="px-8 py-2 text-sm shadow-md">
-                        {{ __('Place Order') }}
-                     </x-button>
-                  </div>
-               </form>
+
+                        <!-- Price -->
+                        <div class="w-full md:w-1/6">
+                            <label class="block text-xs text-gray-500 mb-1">Price</label>
+                            <input name="items[0][price]" readonly
+                                class="price w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800">
+                        </div>
+
+                        <!-- Qty -->
+                        <div class="w-full md:w-1/6">
+                            <label class="block text-xs text-gray-500 mb-1">Qty</label>
+                            <div class="flex items-center">
+                                <button type="button"
+                                    class="qty-minus px-2 border border-r-0 rounded-l-lg bg-gray-50 dark:bg-gray-700">−</button>
+                                <input name="items[0][qty]" value="1"
+                                    class="qty w-full text-center border-t border-b border-gray-300 dark:border-gray-700 dark:bg-gray-800">
+                                <button type="button"
+                                    class="qty-plus px-2 border border-l-0 rounded-r-lg bg-gray-50 dark:bg-gray-700">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Total -->
+                        <div class="w-full md:w-1/6">
+                            <label class="block text-xs text-gray-500 mb-1">Total</label>
+                            <input name="items[0][total]" readonly
+                                class="total w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800 font-semibold text-blue-600">
+                        </div>
+
+                        <input name="items[0][tax]" class="tax hidden">
+
+                        <!-- Actions -->
+                        <div class="pt-5 md:pt-0">
+                            <button type="button" class="remove-row text-xs text-red-600 hover:underline">
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="addRow"
+                    class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm">
+                    + Add Item
+                </button>
             </div>
-         </div>
-      </div>
+
+            <!-- Totals (Same layout as Edit Form) -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t bg-gray-50 dark:bg-gray-900 p-4 rounded-xl">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Sub Total</label>
+                    <input id="sub_total" name="sub_total" readonly
+                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-right">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Tax</label>
+                    <input id="tax_amount" name="tax_amount" readonly
+                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-right">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Discount</label>
+                    <input id="discount_amount" name="discount_amount" type="number" min="0" step="0.01"
+                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-right">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Grand Total</label>
+                    <input id="grand_total" name="grand_total" readonly
+                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-right font-bold text-blue-600">
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end">
+                <x-button type="primary" class="px-8 py-2">
+                    {{ __('Place Order') }}
+                </x-button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
       <!-- Product List -->
       <div
          class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
@@ -670,34 +668,37 @@
 
 
       function recalc() {
-          let sub = 0,
-              tax = 0;
+    let sub = 0, tax = 0;
 
-          document.querySelectorAll('.item-row').forEach(row => {
-              const price = parseFloat(row.querySelector('.price').value || 0);
-              const qty = parseFloat(row.querySelector('.qty').value || 0);
-              const taxRate = parseFloat(row.querySelector('.tax').dataset.rate || 0);
+    document.querySelectorAll('.item-row').forEach(row => {
+        const price = parseFloat(row.querySelector('.price').value || 0);
+        const qty = parseFloat(row.querySelector('.qty').value || 0);
+        const taxRate = parseFloat(row.querySelector('.tax').dataset.rate || 0);
 
-              const line = price * qty;
-              const lineTax = (line * taxRate) / 100;
+        const line = price * qty;
+        const lineTax = (line * taxRate) / 100;
 
-              row.querySelector('.total').value = (line + lineTax).toFixed(2);
+        row.querySelector('.total').value = (line + lineTax).toFixed(2);
 
-              sub += line;
-              tax += lineTax;
-          });
+        sub += line;
+        tax += lineTax;
+    });
 
-          const grand = sub + tax;
+    const discountEl = document.getElementById('discount_amount');
+    let discount = parseFloat(discountEl?.value || 0);
+    const max = sub + tax;
 
-          document.getElementById('sub_total').value = sub.toFixed(2);
-          document.getElementById('tax_amount').value = tax.toFixed(2);
-          document.getElementById('grand_total').value = grand.toFixed(2);
+    if (discount > max) {
+        discount = max;
+        discountEl.value = max.toFixed(2);
+    }
 
-          const live = document.getElementById('live_total');
-          if (live) {
-              live.textContent = grand.toFixed(2);
-          }
-      }
+    document.getElementById('sub_total').value = sub.toFixed(2);
+    document.getElementById('tax_amount').value = tax.toFixed(2);
+    document.getElementById('grand_total').value =
+        Math.max(0, (sub + tax - discount)).toFixed(2);
+}
+
 
       document.addEventListener('change', function(e) {
           if (e.target.classList.contains('product-select')) {
@@ -714,10 +715,11 @@
       });
 
       document.addEventListener('input', function(e) {
-          if (e.target.classList.contains('qty')) {
-              recalc();
-          }
-      });
+    if (e.target.classList.contains('qty') || e.target.id === 'discount_amount') {
+        recalc();
+    }
+});
+
 
       document.getElementById('addRow').addEventListener('click', function() {
           const base = document.querySelector('.item-row');

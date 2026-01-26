@@ -76,135 +76,138 @@ class OrderController extends Controller
     }
 
     public function store(Request $request, InventoryService $inventory)
-    {
-        $items = array_values(array_filter(
-            $request->input('items', []),
-            fn ($row) => !empty($row['product_id']) && !empty($row['qty'])
-        ));
+{
+    $items = array_values(array_filter(
+        $request->input('items', []),
+        fn ($row) => !empty($row['product_id']) && !empty($row['qty'])
+    ));
 
-        $request->merge(['items' => $items]);
+    $request->merge(['items' => $items]);
 
-        $data = $request->validate([
-            'customer_id'           => 'required|exists:customers,id',
-            'billing_address_id'    => 'nullable|exists:customer_addresses,id',
-            'shipping_address_id'   => 'nullable|exists:customer_addresses,id',
-            'items'                 => 'required|array|min:1',
-            'items.*.product_id'    => 'required|exists:products,id',
-            'items.*.qty'           => 'required|numeric|min:1',
-            'discount_amount'       => 'nullable|numeric|min:0',
-        ]);
+    $data = $request->validate([
+        'customer_id'           => 'required|exists:customers,id',
+        'billing_address_id'    => 'nullable|exists:customer_addresses,id',
+        'shipping_address_id'   => 'nullable|exists:customer_addresses,id',
+        'items'                 => 'required|array|min:1',
+        'items.*.product_id'    => 'required|exists:products,id',
+        'items.*.qty'           => 'required|numeric|min:1',
+        'discount_amount'       => 'nullable|numeric|min:0',
+    ]);
 
-        try {
-            DB::transaction(function () use ($data, $request) {
+    try {
+        DB::transaction(function () use ($data, $request) {
 
-                $customer = Customer::with(['addresses'])->findOrFail($data['customer_id']);
+            $customer = Customer::with(['addresses'])->findOrFail($data['customer_id']);
 
-                if ($request->filled('new_billing.line1')) {
-                    $addr = $customer->addresses()->create([
-                        'customer_id'   => $customer->id,
-                        'type'          => 'billing',
-                        'address_line1' => $request->input('new_billing.line1'),
-                        'address_line2' => $request->input('new_billing.line2'),
-                        'district'      => $request->input('new_billing.city'),
-                        'state'         => $request->input('new_billing.state'),
-                        'pincode'       => $request->input('new_billing.pincode'),
-                        'country'       => 'India',
-                    ]);
-                    $data['billing_address_id'] = $addr->id;
-                }
+            if ($request->filled('new_billing.line1')) {
+                $addr = $customer->addresses()->create([
+                    'customer_id'   => $customer->id,
+                    'type'          => 'billing',
+                    'address_line1' => $request->input('new_billing.line1'),
+                    'address_line2' => $request->input('new_billing.line2'),
+                    'district'      => $request->input('new_billing.city'),
+                    'state'         => $request->input('new_billing.state'),
+                    'pincode'       => $request->input('new_billing.pincode'),
+                    'country'       => 'India',
+                ]);
+                $data['billing_address_id'] = $addr->id;
+            }
 
-                if ($request->filled('new_shipping.line1')) {
-                    $addr = $customer->addresses()->create([
-                        'customer_id'   => $customer->id,
-                        'type'          => 'shipping',
-                        'address_line1' => $request->input('new_shipping.line1'),
-                        'address_line2' => $request->input('new_shipping.line2'),
-                        'district'      => $request->input('new_shipping.city'),
-                        'state'         => $request->input('new_shipping.state'),
-                        'pincode'       => $request->input('new_shipping.pincode'),
-                        'country'       => 'India',
-                    ]);
-                    $data['shipping_address_id'] = $addr->id;
-                }
+            if ($request->filled('new_shipping.line1')) {
+                $addr = $customer->addresses()->create([
+                    'customer_id'   => $customer->id,
+                    'type'          => 'shipping',
+                    'address_line1' => $request->input('new_shipping.line1'),
+                    'address_line2' => $request->input('new_shipping.line2'),
+                    'district'      => $request->input('new_shipping.city'),
+                    'state'         => $request->input('new_shipping.state'),
+                    'pincode'       => $request->input('new_shipping.pincode'),
+                    'country'       => 'India',
+                ]);
+                $data['shipping_address_id'] = $addr->id;
+            }
 
-                if (
-                    $request->boolean('same_as_billing') &&
-                    !empty($data['billing_address_id']) &&
-                    empty($data['shipping_address_id'])
-                ) {
-                    $data['shipping_address_id'] = $data['billing_address_id'];
-                }
+            if (
+                $request->boolean('same_as_billing') &&
+                !empty($data['billing_address_id']) &&
+                empty($data['shipping_address_id'])
+            ) {
+                $data['shipping_address_id'] = $data['billing_address_id'];
+            }
 
-                $customer->load('addresses');
+            $customer->load('addresses');
 
-                $billing = isset($data['billing_address_id'])
-                    ? $customer->addresses->firstWhere('id', $data['billing_address_id'])
-                    : $customer->defaultBillingAddress;
+            $billing = isset($data['billing_address_id'])
+                ? $customer->addresses->firstWhere('id', $data['billing_address_id'])
+                : $customer->defaultBillingAddress;
 
-                $shipping = isset($data['shipping_address_id'])
-                    ? $customer->addresses->firstWhere('id', $data['shipping_address_id'])
-                    : $customer->defaultShippingAddress;
+            $shipping = isset($data['shipping_address_id'])
+                ? $customer->addresses->firstWhere('id', $data['shipping_address_id'])
+                : $customer->defaultShippingAddress;
 
-                $order = Order::create([
-                    'uuid'             => (string) Str::uuid(),
-                    'order_code'       => 'ORD-' . now()->format('Ymd-His'),
-                    'customer_id'      => $customer->id,
-                    'customer_name'    => $customer->display_name
-                        ?? trim($customer->first_name . ' ' . $customer->last_name),
-                    'customer_email'   => $customer->email,
-                    'customer_phone'   => $customer->mobile,
-                    'order_date'       => now(),
-                    'status'           => 'draft',
-                    'payment_status'   => 'unpaid',
-                    'billing_address'  => $billing ? $billing->formatted() : null,
-                    'shipping_address' => $shipping ? $shipping->formatted() : null,
-                    'created_by'       => auth()->id(),
+            $order = Order::create([
+                'uuid'             => (string) Str::uuid(),
+                'order_code'       => 'ORD-' . now()->format('Ymd-His'),
+                'customer_id'      => $customer->id,
+                'customer_name'    => $customer->display_name
+                    ?? trim($customer->first_name . ' ' . $customer->last_name),
+                'customer_email'   => $customer->email,
+                'customer_phone'   => $customer->mobile,
+                'order_date'       => now(),
+                'status'           => 'draft',
+                'payment_status'   => 'unpaid',
+                'billing_address'  => $billing ? $billing->formatted() : null,
+                'shipping_address' => $shipping ? $shipping->formatted() : null,
+                'created_by'       => auth()->id(),
+            ]);
+
+            $subTotal = 0;
+            $taxTotal = 0;
+
+            foreach ($data['items'] as $row) {
+                $product = Product::findOrFail($row['product_id']);
+
+                $price = $product->price;
+                $qty   = $row['qty'];
+
+                $line    = $price * $qty;
+                $taxRate = $product->gst_percent ?? 0;
+                $lineTax = ($line * $taxRate) / 100;
+
+                $order->items()->create([
+                    'product_id'   => $product->id,
+                    'product_name' => $product->name,
+                    'price'        => $price,
+                    'quantity'     => $qty,
+                    'tax_rate'     => $taxRate,
+                    'tax_amount'   => $lineTax,
+                    'total'        => $line + $lineTax,
                 ]);
 
-                $subTotal = 0;
-                $taxTotal = 0;
+                $subTotal += $line;
+                $taxTotal += $lineTax;
+            }
 
-                foreach ($data['items'] as $row) {
-                    $product = Product::findOrFail($row['product_id']);
+            $rawDiscount = (float) ($request->input('discount_amount') ?? 0);
+            $maxAllowed  = $subTotal + $taxTotal;
+            $discount    = min($rawDiscount, $maxAllowed);
 
-                    $price = $product->price;
-                    $qty   = $row['qty'];
+            $order->update([
+                'sub_total'       => $subTotal,
+                'tax_amount'      => $taxTotal,
+                'discount_amount' => $discount,
+                'grand_total'     => round($maxAllowed - $discount, 2),
+            ]);
+        });
 
-                    $line    = $price * $qty;
-                    $taxRate = $product->gst_percent ?? 0;
-                    $lineTax = ($line * $taxRate) / 100;
+        return redirect()->route('orders.index')->with('success', 'Order placed successfully.');
 
-                    $order->items()->create([
-                        'product_id'   => $product->id,
-                        'product_name' => $product->name,
-                        'price'        => $price,
-                        'quantity'     => $qty,
-                        'tax_rate'     => $taxRate,
-                        'tax_amount'   => $lineTax,
-                        'total'        => $line + $lineTax,
-                    ]);
-
-                    $subTotal += $line;
-                    $taxTotal += $lineTax;
-                }
-
-                $discount = (float) ($request->input('discount_amount') ?? 0);
-
-                $order->update([
-                    'sub_total'       => $subTotal,
-                    'tax_amount'      => $taxTotal,
-                    'discount_amount' => $discount,
-                    'grand_total'     => max(0, $subTotal + $taxTotal - $discount),
-                ]);
-            });
-
-            return redirect()->route('orders.index')->with('success', 'Order placed successfully.');
-
-        } catch (\Throwable $e) {
-            Log::error('Order create failed', ['error' => $e->getMessage()]);
-            return back()->with('error', 'Failed to place order. Please try again.');
-        }
+    } catch (\Throwable $e) {
+        Log::error('Order create failed', ['error' => $e->getMessage()]);
+        return back()->with('error', 'Failed to place order. Please try again.');
     }
+}
+
 
     public function show(Order $order)
     {
@@ -254,87 +257,92 @@ class OrderController extends Controller
     }
 
     public function update(Request $request, Order $order)
-    {
-        $user = auth()->user();
+{
+    $user = auth()->user();
 
-        if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
-            abort_unless($order->created_by === $user->id, 403);
-        }
+    if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
+        abort_unless($order->created_by === $user->id, 403);
+    }
 
-        $items = array_values(array_filter(
-            $request->input('items', []),
-            fn ($row) => !empty($row['product_id']) && !empty($row['qty'])
-        ));
+    $items = array_values(array_filter(
+        $request->input('items', []),
+        fn ($row) => !empty($row['product_id']) && !empty($row['qty'])
+    ));
 
-        $request->merge(['items' => $items]);
+    $request->merge(['items' => $items]);
 
-        $data = $request->validate([
-            'billing_address'    => 'nullable|string',
-            'shipping_address'   => 'nullable|string',
-            'items'              => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.qty'        => 'required|numeric|min:1',
-            'discount_amount'    => 'nullable|numeric|min:0',
-        ]);
+    $data = $request->validate([
+        'billing_address'    => 'nullable|string',
+        'shipping_address'   => 'nullable|string',
+        'items'              => 'required|array|min:1',
+        'items.*.product_id' => 'required|exists:products,id',
+        'items.*.qty'        => 'required|numeric|min:1',
+        'discount_amount'    => 'nullable|numeric|min:0',
+    ]);
 
-        try {
-            DB::transaction(function () use ($order, $data, $request) {
+    try {
+        DB::transaction(function () use ($order, $data, $request) {
 
-                $order->update([
-                    'billing_address'  => $data['billing_address'] ?? $order->billing_address,
-                    'shipping_address' => $data['shipping_address'] ?? $order->shipping_address,
-                ]);
-
-                $order->items()->delete();
-
-                $subTotal = 0;
-                $taxTotal = 0;
-
-                foreach ($data['items'] as $row) {
-                    $product = Product::findOrFail($row['product_id']);
-
-                    $price = $product->price;
-                    $qty   = $row['qty'];
-
-                    $line    = $price * $qty;
-                    $taxRate = $product->gst_percent ?? 0;
-                    $lineTax = ($line * $taxRate) / 100;
-
-                    $order->items()->create([
-                        'product_id'   => $product->id,
-                        'product_name' => $product->name,
-                        'price'        => $price,
-                        'quantity'     => $qty,
-                        'tax_rate'     => $taxRate,
-                        'tax_amount'   => $lineTax,
-                        'total'        => $line + $lineTax,
-                    ]);
-
-                    $subTotal += $line;
-                    $taxTotal += $lineTax;
-                }
-
-                $discount = (float) ($request->input('discount_amount') ?? 0);
-
-                $order->update([
-                    'sub_total'       => $subTotal,
-                    'tax_amount'      => $taxTotal,
-                    'discount_amount' => $discount,
-                    'grand_total'     => max(0, $subTotal + $taxTotal - $discount),
-                ]);
-            });
-
-            return redirect()->route('orders.show', $order)->with('success', 'Order updated successfully.');
-
-        } catch (\Throwable $e) {
-            Log::error('Order update failed', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage(),
+            $order->update([
+                'billing_address'  => $data['billing_address'] ?? $order->billing_address,
+                'shipping_address' => $data['shipping_address'] ?? $order->shipping_address,
             ]);
 
-            return back()->with('error', 'Failed to update order.');
-        }
+            $order->items()->delete();
+
+            $subTotal = 0;
+            $taxTotal = 0;
+
+            foreach ($data['items'] as $row) {
+                $product = Product::findOrFail($row['product_id']);
+
+                $price = $product->price;
+                $qty   = $row['qty'];
+
+                $line    = $price * $qty;
+                $taxRate = $product->gst_percent ?? 0;
+                $lineTax = ($line * $taxRate) / 100;
+
+                $order->items()->create([
+                    'product_id'   => $product->id,
+                    'product_name' => $product->name,
+                    'price'        => $price,
+                    'quantity'     => $qty,
+                    'tax_rate'     => $taxRate,
+                    'tax_amount'   => $lineTax,
+                    'total'        => $line + $lineTax,
+                ]);
+
+                $subTotal += $line;
+                $taxTotal += $lineTax;
+            }
+
+            // Clamp discount so it never exceeds payable amount
+            $rawDiscount = (float) ($request->input('discount_amount') ?? 0);
+            $maxAllowed  = $subTotal + $taxTotal;
+            $discount    = min($rawDiscount, $maxAllowed);
+
+            $order->update([
+                'sub_total'       => $subTotal,
+                'tax_amount'      => $taxTotal,
+                'discount_amount' => $discount,
+                'grand_total'     => round($maxAllowed - $discount, 2),
+            ]);
+        });
+
+        return redirect()->route('orders.show', $order)
+            ->with('success', 'Order updated successfully.');
+
+    } catch (\Throwable $e) {
+        Log::error('Order update failed', [
+            'order_id' => $order->id,
+            'error'    => $e->getMessage(),
+        ]);
+
+        return back()->with('error', 'Failed to update order.');
     }
+}
+
 
     public function destroy(Order $order)
     {
