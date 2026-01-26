@@ -406,50 +406,48 @@
             </div>
 
             <!-- COD / Post Slip -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-5">
-    <h3 class="text-[11px] font-semibold uppercase tracking-wider mb-3 text-gray-600 dark:text-gray-300">
-        COD / Post Slip
-    </h3>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-5">
+                <h3 class="text-[11px] font-semibold uppercase tracking-wider mb-3 text-gray-600 dark:text-gray-300">
+                    COD / Post Slip
+                </h3>
 
-    @if ($order->status === 'cancelled')
-        <div class="text-xs text-red-500">
-            This order is cancelled. COD slip cannot be generated.
-        </div>
+                @if ($order->status === 'cancelled')
+                    <div class="text-xs text-red-500">
+                        This order is cancelled. COD slip cannot be generated.
+                    </div>
+                @elseif ($order->codSlip)
+                    <div class="space-y-2 text-xs mb-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">COD Amount</span>
+                            <span class="font-medium">₹{{ number_format($order->codSlip->cod_amount, 2) }}</span>
+                        </div>
 
-    @elseif ($order->codSlip)
-        <div class="space-y-2 text-xs mb-4">
-            <div class="flex justify-between">
-                <span class="text-gray-400">COD Amount</span>
-                <span class="font-medium">₹{{ number_format($order->codSlip->cod_amount, 2) }}</span>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Generated</span>
+                            <span class="font-medium">
+                                {{ $order->codSlip->created_at?->format('d M Y H:i') }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="{{ route('cod.download', $order) }}"
+                            class="px-3 py-2 text-xs text-center rounded-md border hover:bg-gray-100 dark:hover:bg-gray-700">
+                            Download
+                        </a>
+
+                        <a href="{{ route('cod.print', $order) }}" target="_blank"
+                            class="px-3 py-2 text-xs text-center rounded-md border hover:bg-gray-100 dark:hover:bg-gray-700">
+                            Print
+                        </a>
+                    </div>
+                @else
+                    <form action="{{ route('cod.store', $order) }}" method="POST">
+                        @csrf
+                        <x-button type="primary" class="w-full text-sm">Generate COD Slip</x-button>
+                    </form>
+                @endif
             </div>
-
-            <div class="flex justify-between">
-                <span class="text-gray-400">Generated</span>
-                <span class="font-medium">
-                    {{ $order->codSlip->created_at?->format('d M Y H:i') }}
-                </span>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-            <a href="{{ route('cod.download', $order) }}"
-               class="px-3 py-2 text-xs text-center rounded-md border hover:bg-gray-100 dark:hover:bg-gray-700">
-                Download
-            </a>
-
-            <a href="{{ route('cod.print', $order) }}" target="_blank"
-               class="px-3 py-2 text-xs text-center rounded-md border hover:bg-gray-100 dark:hover:bg-gray-700">
-                Print
-            </a>
-        </div>
-
-    @else
-        <form action="{{ route('cod.store', $order) }}" method="POST">
-            @csrf
-            <x-button type="primary" class="w-full text-sm">Generate COD Slip</x-button>
-        </form>
-    @endif
-</div>
 
 
             <!-- Payments -->

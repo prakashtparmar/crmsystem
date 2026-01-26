@@ -57,10 +57,10 @@
             {{-- @include('customers.partials.show.system') --}}
 
             @include('customers.partials.basic')
-                    @include('customers.partials.address')
-                    @include('customers.partials.agriculture')
-                    @include('customers.partials.reference')
-                    @include('customers.partials.financial')
+                 {{--   @include('customers.partials.address') --}}
+               {{--     @include('customers.partials.agriculture') --}}
+               {{--     @include('customers.partials.reference')  --}}
+                {{--    @include('customers.partials.financial') --}}
 
             {{-- Quick Order --}}
             @include('customers.partials.show.quick-order')
