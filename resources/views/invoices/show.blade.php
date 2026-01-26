@@ -88,7 +88,7 @@
 <table class="top">
     <tr>
         <td width="60%">
-            <div class="logo">Krushify</div>
+            <div class="logo">Krushify Agro Pvt Ltd.</div>
             <strong>Mobile:</strong> 9199125925<br>
             <strong>Address:</strong> The One World (B), 1005, Ayodhya Circle<br>
             <strong>Email:</strong> info@krushifyagro.com<br>

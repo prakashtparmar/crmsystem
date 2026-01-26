@@ -4,16 +4,18 @@ namespace App\Http\Controllers\Customers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use Illuminate\Http\Request;
 
 class CustomerAddressController extends Controller
 {
     public function __construct()
     {
         $this->middleware('permission:customers.view')->only(['addresses']);
+        $this->middleware('permission:customers.edit')->only(['store']);
     }
 
     /**
-     * URL: /customers/{customer}/addresses
+     * GET: /customers/{customer}/addresses
      */
     public function addresses(Customer $customer)
     {
@@ -56,5 +58,30 @@ class CustomerAddressController extends Controller
                 ]];
             })
             ->values();
+    }
+
+    /**
+     * POST: /customers/{customer}/addresses
+     */
+    public function store(Request $request, Customer $customer)
+    {
+        $data = $request->validate([
+            'type'          => 'required|in:billing,shipping',
+            'address_line1' => 'required|string',
+            'address_line2' => 'nullable|string',
+            'pincode'       => 'nullable|string',
+            'post_office'   => 'nullable|string',
+            'village'       => 'nullable|string',
+            'taluka'        => 'nullable|string',
+            'district'      => 'nullable|string',
+            'state'         => 'nullable|string',
+        ]);
+
+        $addr = $customer->addresses()->create($data);
+
+        return response()->json([
+            'id'   => $addr->id,
+            'text' => $addr->address_line1 . ', ' . $addr->district,
+        ]);
     }
 }

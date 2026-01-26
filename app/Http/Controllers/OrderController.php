@@ -75,8 +75,14 @@ class OrderController extends Controller
         return view('orders.create', compact('customers', 'products'));
     }
 
-    public function store(Request $request, InventoryService $inventory)
+   public function store(Request $request, InventoryService $inventory)
 {
+    foreach (['billing_address_id', 'shipping_address_id'] as $key) {
+        if ($request->input($key) === 'new') {
+            $request->merge([$key => null]);
+        }
+    }
+
     $items = array_values(array_filter(
         $request->input('items', []),
         fn ($row) => !empty($row['product_id']) && !empty($row['qty'])
@@ -85,14 +91,15 @@ class OrderController extends Controller
     $request->merge(['items' => $items]);
 
     $data = $request->validate([
-        'customer_id'           => 'required|exists:customers,id',
-        'billing_address_id'    => 'nullable|exists:customer_addresses,id',
-        'shipping_address_id'   => 'nullable|exists:customer_addresses,id',
-        'items'                 => 'required|array|min:1',
-        'items.*.product_id'    => 'required|exists:products,id',
-        'items.*.qty'           => 'required|numeric|min:1',
-        'discount_amount'       => 'nullable|numeric|min:0',
+        'customer_id'         => 'required|exists:customers,id',
+        'billing_address_id'  => 'nullable|exists:customer_addresses,id',
+        'shipping_address_id' => 'nullable|exists:customer_addresses,id',
+        'items'               => 'required|array|min:1',
+        'items.*.product_id'  => 'required|exists:products,id',
+        'items.*.qty'         => 'required|numeric|min:1',
+        'discount_amount'     => 'nullable|numeric|min:0',
     ]);
+
 
     try {
         DB::transaction(function () use ($data, $request) {
@@ -137,29 +144,64 @@ class OrderController extends Controller
 
             $customer->load('addresses');
 
-            $billing = isset($data['billing_address_id'])
-                ? $customer->addresses->firstWhere('id', $data['billing_address_id'])
-                : $customer->defaultBillingAddress;
+// BILLING ADDRESS TEXT
+if (!empty($data['billing_address_id'])) {
+    // Selected from customer_addresses
+    $billingText = optional(
+        $customer->addresses->firstWhere('id', $data['billing_address_id'])
+    )->formatted();
+} else {
+    // Use legacy address from customers table
+    $billingText = trim(implode(', ', array_filter([
+        $customer->address_line1,
+        $customer->address_line2,
+        $customer->village,
+        $customer->taluka,
+        $customer->district,
+        $customer->state,
+        $customer->pincode,
+        $customer->country,
+    ])));
+}
 
-            $shipping = isset($data['shipping_address_id'])
-                ? $customer->addresses->firstWhere('id', $data['shipping_address_id'])
-                : $customer->defaultShippingAddress;
+// SHIPPING ADDRESS TEXT
+if (!empty($data['shipping_address_id'])) {
+    // Selected from customer_addresses
+    $shippingText = optional(
+        $customer->addresses->firstWhere('id', $data['shipping_address_id'])
+    )->formatted();
+} elseif ($request->boolean('same_as_billing')) {
+    $shippingText = $billingText;
+} else {
+    // Use legacy address from customers table
+    $shippingText = trim(implode(', ', array_filter([
+        $customer->address_line1,
+        $customer->address_line2,
+        $customer->village,
+        $customer->taluka,
+        $customer->district,
+        $customer->state,
+        $customer->pincode,
+        $customer->country,
+    ])));
+}
 
-            $order = Order::create([
-                'uuid'             => (string) Str::uuid(),
-                'order_code'       => 'ORD-' . now()->format('Ymd-His'),
-                'customer_id'      => $customer->id,
-                'customer_name'    => $customer->display_name
-                    ?? trim($customer->first_name . ' ' . $customer->last_name),
-                'customer_email'   => $customer->email,
-                'customer_phone'   => $customer->mobile,
-                'order_date'       => now(),
-                'status'           => 'draft',
-                'payment_status'   => 'unpaid',
-                'billing_address'  => $billing ? $billing->formatted() : null,
-                'shipping_address' => $shipping ? $shipping->formatted() : null,
-                'created_by'       => auth()->id(),
-            ]);
+$order = Order::create([
+    'uuid'             => (string) Str::uuid(),
+    'order_code'       => 'ORD-' . now()->format('Ymd-His'),
+    'customer_id'      => $customer->id,
+    'customer_name'    => $customer->display_name
+        ?? trim($customer->first_name . ' ' . $customer->last_name),
+    'customer_email'   => $customer->email,
+    'customer_phone'   => $customer->mobile,
+    'order_date'       => now(),
+    'status'           => 'draft',
+    'payment_status'   => 'unpaid',
+    'billing_address'  => $billingText ?: null,
+    'shipping_address' => $shippingText ?: null,
+    'created_by'       => auth()->id(),
+]);
+
 
             $subTotal = 0;
             $taxTotal = 0;
@@ -263,6 +305,7 @@ class OrderController extends Controller
     if ($user->can('orders.view_own') && ! $user->can('orders.view_all')) {
         abort_unless($order->created_by === $user->id, 403);
     }
+
 
     $items = array_values(array_filter(
         $request->input('items', []),

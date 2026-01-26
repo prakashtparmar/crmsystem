@@ -72,6 +72,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('address-lookup', [AddressLookupController::class, 'lookup'])
         ->name('address.lookup');
 
+    // New Address Add In Create Order
+
+Route::post(
+    '/customers/{customer}/addresses',
+    [CustomerAddressController::class, 'store']
+)
+->middleware('can:customers.edit')
+->name('customers.addresses.store');
+
+
+
+
+
 
     /* ================= Settings ================= */
     Route::get('settings/profile', [Settings\ProfileController::class, 'edit'])
