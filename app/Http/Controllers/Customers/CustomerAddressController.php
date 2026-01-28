@@ -18,47 +18,39 @@ class CustomerAddressController extends Controller
      * GET: /customers/{customer}/addresses
      */
     public function addresses(Customer $customer)
-    {
-        return $customer->addresses()
-            ->orderByDesc('is_default')
-            ->get()
-            ->flatMap(function ($addr) {
+{
+    return $customer->addresses()
+        ->orderByDesc('is_default')
+        ->get()
+        ->flatMap(function ($addr) {
 
-                $formatted = implode(', ', array_filter([
-                    $addr->label,
-                    $addr->contact_name,
-                    $addr->address_line1,
-                    $addr->address_line2,
-                    $addr->village,
-                    $addr->district,
-                    $addr->state,
-                    $addr->pincode,
-                    $addr->country,
-                ]));
+            // Use the model's enterprise formatter
+            $formatted = $addr->formatted();
 
-                if ($addr->type === 'both') {
-                    return [
-                        [
-                            'id'        => $addr->id,
-                            'type'      => 'billing',
-                            'formatted' => $formatted,
-                        ],
-                        [
-                            'id'        => $addr->id,
-                            'type'      => 'shipping',
-                            'formatted' => $formatted,
-                        ],
-                    ];
-                }
+            if ($addr->type === 'both') {
+                return [
+                    [
+                        'id'        => $addr->id,
+                        'type'      => 'billing',
+                        'formatted' => $formatted,
+                    ],
+                    [
+                        'id'        => $addr->id,
+                        'type'      => 'shipping',
+                        'formatted' => $formatted,
+                    ],
+                ];
+            }
 
-                return [[
-                    'id'        => $addr->id,
-                    'type'      => $addr->type,
-                    'formatted' => $formatted,
-                ]];
-            })
-            ->values();
-    }
+            return [[
+                'id'        => $addr->id,
+                'type'      => $addr->type,
+                'formatted' => $formatted,
+            ]];
+        })
+        ->values();
+}
+
 
     /**
      * POST: /customers/{customer}/addresses

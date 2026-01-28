@@ -63,19 +63,37 @@ class CustomerAddress extends Model
      * Used for Order snapshots, invoices, shipments, PDFs, etc.
      */
     public function formatted(): ?string
-    {
-        return implode("\n", array_filter([
-            $this->contact_name,
-            $this->address_line1,
-            $this->address_line2,
-            $this->village,
-            $this->taluka,
-            $this->district,
-            trim(($this->state ?? '') . ($this->pincode ? ' - ' . $this->pincode : '')),
-            $this->country,
-            $this->contact_phone ? 'Phone: ' . $this->contact_phone : null,
-        ]));
-    }
+{
+    return implode("\n", array_filter([
+        $this->label ? 'Label: ' . $this->label : null,
+        $this->contact_name ? 'Name: ' . $this->contact_name : null,
+        $this->contact_phone ? 'Phone: ' . $this->contact_phone : null,
+
+        $this->address_line1 ? 'Address Line 1: ' . $this->address_line1 : null,
+        $this->address_line2 ? 'Landmark: ' . $this->address_line2 : null,
+
+        $this->post_office ? 'Post Office: ' . $this->post_office : null,
+        $this->village ? 'Village: ' . $this->village : null,
+        $this->taluka ? 'Taluka: ' . $this->taluka : null,
+        $this->district ? 'District: ' . $this->district : null,
+
+        ($this->state || $this->pincode)
+            ? 'State & Pincode: ' . trim(($this->state ?? '') . ' ' . ($this->pincode ?? ''))
+            : null,
+
+        $this->country ? 'Country: ' . $this->country : null,
+
+        $this->region ? 'Region: ' . $this->region : null,
+        $this->area ? 'Area: ' . $this->area : null,
+        $this->route ? 'Route: ' . $this->route : null,
+        $this->beat ? 'Beat: ' . $this->beat : null,
+        $this->territory ? 'Territory: ' . $this->territory : null,
+        $this->zone ? 'Zone: ' . $this->zone : null,
+        $this->warehouse ? 'Warehouse: ' . $this->warehouse : null,
+    ]));
+}
+
+
 
     /**
      * Scope helpers

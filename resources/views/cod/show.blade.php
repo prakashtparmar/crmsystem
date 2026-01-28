@@ -86,47 +86,94 @@
         <strong>To,</strong><br>
         <strong>Name:</strong> {{ $slip->customer_name }}<br>
 
-
         @php $addressPrinted = false; @endphp
 
         @foreach($addressLines as $line)
-            @php $line = trim($line); @endphp
-            @if($line !== '')
+    @php $line = trim($line); @endphp
+    @if($line !== '')
 
-                {{-- Handle "State & Pincode" or "State" --}}
-                @if(stripos($line, 'state') === 0)
-                    @php
-                        $clean = preg_replace('/^state\s*&?\s*pincode\s*:?/i', '', $line);
-                        $clean = preg_replace('/^state\s*:?/i', '', $clean);
-                        $parts = preg_split('/[-–]/', trim($clean));
-                        $state = trim($parts[0] ?? '');
-                        $pin2  = trim($parts[1] ?? '');
-                    @endphp
+        {{-- Handle "State & Pincode" --}}
+        @if(stripos($line, 'state') === 0)
+            @php
+                $clean = preg_replace('/^state\s*&?\s*pincode\s*:?/i', '', $line);
+                $clean = trim($clean);
 
-                    @if($pin2)
-                        <strong>Pincode :</strong> {{ $pin2 }}<br>
-                    @endif
-                    <strong>State :</strong> {{ $state }}<br>
+                // Extract PIN if present
+                preg_match('/\b\d{6}\b/', $clean, $m);
+                $pin2 = $m[0] ?? '';
 
-                {{-- Normalize "Address Line 1" --}}
-                @elseif(stripos($line, 'address line 1') === 0)
-                    @php [$k, $v] = explode(':', $line, 2); @endphp
-                    <strong>Address:</strong> {{ trim($v) }}<br>
-                    @php $addressPrinted = true; @endphp
+                // Remove PIN from state text
+                $state = trim(str_replace($pin2, '', $clean), " -");
+            @endphp
 
-                {{-- Any other Key: Value --}}
-                @elseif(strpos($line, ':') !== false)
-                    @php [$k, $v] = explode(':', $line, 2); @endphp
-                    <strong>{{ trim($k) }}:</strong> {{ trim($v) }}<br>
-
-                {{-- First plain line becomes Address --}}
-                @elseif(!$addressPrinted)
-                    <strong>Address:</strong> {{ $line }}<br>
-                    @php $addressPrinted = true; @endphp
-                @endif
-
+            @if($state)
+                <strong>State:</strong> {{ $state }}<br>
             @endif
-        @endforeach
+
+            @if($pin2)
+                <strong>Pincode:</strong> {{ $pin2 }}<br>
+            @endif
+
+        {{-- Normalize "Address Line 1" --}}
+        @elseif(stripos($line, 'address line 1') === 0)
+            @php [$k, $v] = explode(':', $line, 2); @endphp
+            <strong>Address:</strong> {{ trim($v) }}<br>
+            @php $addressPrinted = true; @endphp
+
+        {{-- Landmark --}}
+        @elseif(stripos($line, 'landmark') === 0)
+            @php [$k, $v] = explode(':', $line, 2); @endphp
+            <strong>Landmark:</strong> {{ trim($v) }}<br>
+
+        {{-- Post Office --}}
+        @elseif(stripos($line, 'post office') === 0)
+            @php [$k, $v] = explode(':', $line, 2); @endphp
+            <strong>Post Office:</strong> {{ trim($v) }}<br>
+
+        {{-- Country --}}
+        @elseif(stripos($line, 'country') === 0)
+            @php [$k, $v] = explode(':', $line, 2); @endphp
+            <strong>Country:</strong> {{ trim($v) }}<br>
+
+        {{-- Any other Key: Value --}}
+        @elseif(strpos($line, ':') !== false)
+            @php [$k, $v] = explode(':', $line, 2); @endphp
+            <strong>{{ trim($k) }}:</strong> {{ trim($v) }}<br>
+
+        {{-- First plain line becomes Address --}}
+        @elseif(!$addressPrinted)
+            <strong>Address:</strong> {{ $line }}<br>
+            @php $addressPrinted = true; @endphp
+        @endif
+
+    @endif
+@endforeach
+
+
+        {{-- Structured fallbacks --}}
+        @if(!empty($slip->village))
+            <strong>Village:</strong> {{ $slip->village }}<br>
+        @endif
+
+        @if(!empty($slip->taluka))
+            <strong>Taluka:</strong> {{ $slip->taluka }}<br>
+        @endif
+
+        @if(!empty($slip->district))
+            <strong>District:</strong> {{ $slip->district }}<br>
+        @endif
+
+        @if(!empty($slip->post_office))
+            <strong>Post Office:</strong> {{ $slip->post_office }}<br>
+        @endif
+
+        @if(!empty($slip->state))
+            <strong>State:</strong> {{ $slip->state }}<br>
+        @endif
+
+        @if(!empty($slip->pincode))
+            <strong>Pincode:</strong> {{ $slip->pincode }}<br>
+        @endif
 
         <strong>Contact Number:</strong> {{ $slip->mobile }}<br>
         @if($slip->alt_mobile)

@@ -92,26 +92,60 @@
             @php $line = trim($line); @endphp
             @if($line !== '')
 
-                {{-- Handle "State & Pincode" or "State" --}}
+                {{-- Handle "State & Pincode" --}}
                 @if(stripos($line, 'state') === 0)
                     @php
                         $clean = preg_replace('/^state\s*&?\s*pincode\s*:?/i', '', $line);
-                        $clean = preg_replace('/^state\s*:?/i', '', $clean);
-                        $parts = preg_split('/[-–]/', trim($clean));
-                        $state = trim($parts[0] ?? '');
-                        $pin2  = trim($parts[1] ?? '');
+                        $clean = trim($clean);
+
+                        preg_match('/\b\d{6}\b/', $clean, $m);
+                        $pin2 = $m[0] ?? '';
+                        $state = trim(str_replace($pin2, '', $clean), " -");
                     @endphp
 
-                    @if($pin2)
-                        <strong>Pincode :</strong> {{ $pin2 }}<br>
+                    @if($state)
+                        <strong>State:</strong> {{ $state }}<br>
                     @endif
-                    <strong>State :</strong> {{ $state }}<br>
 
-                {{-- Normalize "Address Line 1" --}}
+                    @if($pin2)
+                        <strong>Pincode:</strong> {{ $pin2 }}<br>
+                    @endif
+
+                {{-- Address Line 1 --}}
                 @elseif(stripos($line, 'address line 1') === 0)
                     @php [$k, $v] = explode(':', $line, 2); @endphp
                     <strong>Address:</strong> {{ trim($v) }}<br>
                     @php $addressPrinted = true; @endphp
+
+                {{-- Landmark --}}
+                @elseif(stripos($line, 'landmark') === 0)
+                    @php [$k, $v] = explode(':', $line, 2); @endphp
+                    <strong>Landmark:</strong> {{ trim($v) }}<br>
+
+                {{-- Post Office --}}
+                @elseif(stripos($line, 'post office') === 0)
+                    @php [$k, $v] = explode(':', $line, 2); @endphp
+                    <strong>Post Office:</strong> {{ trim($v) }}<br>
+
+                {{-- Village --}}
+                @elseif(stripos($line, 'village') === 0)
+                    @php [$k, $v] = explode(':', $line, 2); @endphp
+                    <strong>Village:</strong> {{ trim($v) }}<br>
+
+                {{-- Taluka --}}
+                @elseif(stripos($line, 'taluka') === 0)
+                    @php [$k, $v] = explode(':', $line, 2); @endphp
+                    <strong>Taluka:</strong> {{ trim($v) }}<br>
+
+                {{-- District --}}
+                @elseif(stripos($line, 'district') === 0)
+                    @php [$k, $v] = explode(':', $line, 2); @endphp
+                    <strong>District:</strong> {{ trim($v) }}<br>
+
+                {{-- Country --}}
+                @elseif(stripos($line, 'country') === 0)
+                    @php [$k, $v] = explode(':', $line, 2); @endphp
+                    <strong>Country:</strong> {{ trim($v) }}<br>
 
                 {{-- Any other Key: Value --}}
                 @elseif(strpos($line, ':') !== false)

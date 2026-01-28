@@ -28,135 +28,115 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         {{-- Billing --}}
-        <div>
-            <label class="block text-xs text-gray-500 mb-2">Billing Address</label>
+<div>
+    <label class="block text-xs text-gray-500 mb-2">Billing Address</label>
 
-            <div id="billingList" class="space-y-2">
-                @foreach ($customer->addresses as $addr)
-                    <label
-                        class="address-item flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <input type="radio"
-                               name="billing_address_id"
-                               value="{{ $addr->id }}"
-                               class="mt-1 rounded"
-                               @checked($loop->first)>
+    <div id="billingList" class="space-y-2">
+        @foreach ($customer->addresses as $addr)
+            <label
+                class="address-item flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                <input type="radio"
+                       name="billing_address_id"
+                       value="{{ $addr->id }}"
+                       class="mt-1 rounded"
+                       @checked($loop->first)>
 
-                        <div class="text-sm text-gray-700 dark:text-gray-300 leading-snug">
-                            <div class="font-medium">
-                                {{ $addr->address_line1 }}
-                                @if ($addr->address_line2), {{ $addr->address_line2 }} @endif
-                            </div>
-                            <div class="text-xs text-gray-500">
-                                {{ $addr->village }}
-                                @if ($addr->village && $addr->taluka), @endif
-                                {{ $addr->taluka }}
-                                @if ($addr->taluka && $addr->district), @endif
-                                {{ $addr->district }},
-                                {{ $addr->state }} - {{ $addr->pincode }}
-                            </div>
-                        </div>
-                    </label>
-                @endforeach
+                <div class="text-sm text-gray-700 dark:text-gray-300 leading-snug whitespace-pre-line">
+                    {{ $addr->formatted() }}
+                </div>
+            </label>
+        @endforeach
+    </div>
+
+    <button type="button"
+        class="mt-3 text-xs px-3 py-1 rounded-md border text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-800"
+        onclick="document.querySelector('.new-billing').classList.toggle('hidden')">
+        + Add New Address
+    </button>
+
+    <div class="mt-3 hidden new-billing border rounded-xl p-4 bg-white dark:bg-gray-900">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+                <label class="block text-xs font-medium">Address Line 1</label>
+                <input name="new_billing[address_line1]" class="w-full rounded-xl border px-3 py-2">
             </div>
 
+            <div class="md:col-span-2">
+                <label class="block text-xs font-medium">Address Line 2</label>
+                <input name="new_billing[address_line2]" class="w-full rounded-xl border px-3 py-2">
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium">Pincode</label>
+                <input name="new_billing[pincode]" id="billing_pincode"
+                       class="w-full rounded-xl border px-3 py-2">
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium">Post Office</label>
+                <input name="new_billing[post_office]" id="billing_post_office"
+                       class="w-full rounded-xl border px-3 py-2">
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium">Village</label>
+                <input name="new_billing[village]" id="billing_village"
+                       class="w-full rounded-xl border px-3 py-2">
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium">Taluka</label>
+                <input name="new_billing[taluka]" id="billing_taluka"
+                       class="w-full rounded-xl border px-3 py-2">
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium">District</label>
+                <input name="new_billing[district]" id="billing_district"
+                       class="w-full rounded-xl border px-3 py-2">
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium">State</label>
+                <input name="new_billing[state]" id="billing_state"
+                       class="w-full rounded-xl border px-3 py-2">
+            </div>
+        </div>
+
+        <div class="mt-3 text-right">
             <button type="button"
-                class="mt-3 text-xs px-3 py-1 rounded-md border text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-800"
-                onclick="document.querySelector('.new-billing').classList.toggle('hidden')">
-                + Add New Address
+                data-type="billing"
+                data-targets="billingList,shippingList"
+                class="save-address text-xs px-3 py-1 rounded-md border bg-blue-600 text-white hover:bg-blue-700">
+                Save Address
             </button>
-
-            <div class="mt-3 hidden new-billing border rounded-xl p-4 bg-white dark:bg-gray-900">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-medium">Address Line 1</label>
-                        <input name="new_billing[address_line1]" class="w-full rounded-xl border px-3 py-2">
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-medium">Address Line 2</label>
-                        <input name="new_billing[address_line2]" class="w-full rounded-xl border px-3 py-2">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium">Pincode</label>
-                        <input name="new_billing[pincode]" id="billing_pincode"
-                               class="w-full rounded-xl border px-3 py-2">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium">Post Office</label>
-                        <input name="new_billing[post_office]" id="billing_post_office"
-                               class="w-full rounded-xl border px-3 py-2">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium">Village</label>
-                        <input name="new_billing[village]" id="billing_village"
-                               class="w-full rounded-xl border px-3 py-2">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium">Taluka</label>
-                        <input name="new_billing[taluka]" id="billing_taluka"
-                               class="w-full rounded-xl border px-3 py-2">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium">District</label>
-                        <input name="new_billing[district]" id="billing_district"
-                               class="w-full rounded-xl border px-3 py-2">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium">State</label>
-                        <input name="new_billing[state]" id="billing_state"
-                               class="w-full rounded-xl border px-3 py-2">
-                    </div>
-                </div>
-
-                <div class="mt-3 text-right">
-                    <button type="button"
-                        data-type="billing"
-                        data-targets="billingList,shippingList"
-                        class="save-address text-xs px-3 py-1 rounded-md border bg-blue-600 text-white hover:bg-blue-700">
-                        Save Address
-                    </button>
-                </div>
-            </div>
         </div>
+    </div>
+</div>
 
-        {{-- Shipping --}}
-        <div>
-            <label class="block text-xs text-gray-500 mb-2">Shipping Address</label>
 
-            <div id="shippingList" class="space-y-2">
-                @foreach ($customer->addresses as $addr)
-                    <label
-                        class="address-item flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <input type="radio"
-                               name="shipping_address_id"
-                               value="{{ $addr->id }}"
-                               class="mt-1 rounded"
-                               @checked($loop->first)>
+      {{-- Shipping --}}
+<div>
+    <label class="block text-xs text-gray-500 mb-2">Shipping Address</label>
 
-                        <div class="text-sm text-gray-700 dark:text-gray-300 leading-snug">
-                            <div class="font-medium">
-                                {{ $addr->address_line1 }}
-                                @if ($addr->address_line2), {{ $addr->address_line2 }} @endif
-                            </div>
-                            <div class="text-xs text-gray-500">
-                                {{ $addr->village }}
-                                @if ($addr->village && $addr->taluka), @endif
-                                {{ $addr->taluka }}
-                                @if ($addr->taluka && $addr->district), @endif
-                                {{ $addr->district }},
-                                {{ $addr->state }} - {{ $addr->pincode }}
-                            </div>
-                        </div>
-                    </label>
-                @endforeach
-            </div>
-        </div>
+    <div id="shippingList" class="space-y-2">
+        @foreach ($customer->addresses as $addr)
+            <label
+                class="address-item flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                <input type="radio"
+                       name="shipping_address_id"
+                       value="{{ $addr->id }}"
+                       class="mt-1 rounded"
+                       @checked($loop->first)>
+
+                <div class="text-sm text-gray-700 dark:text-gray-300 leading-snug whitespace-pre-line">
+                    {{ $addr->formatted() }}
+                </div>
+            </label>
+        @endforeach
+    </div>
+</div>
+
 
     </div>
 </div>

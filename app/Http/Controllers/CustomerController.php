@@ -129,18 +129,33 @@ class CustomerController extends Controller
         ->flatMap(function ($addr) {
 
             $formatted = implode(', ', array_filter([
-                $addr->label,
-                $addr->contact_name,
-                $addr->address_line1,
-                $addr->address_line2,
-                $addr->village,
-                $addr->district,
-                $addr->state,
-                $addr->pincode,
-                $addr->country,
+                $addr->label ? 'Label: ' . $addr->label : null,
+                $addr->contact_name ? 'Name: ' . $addr->contact_name : null,
+                $addr->contact_phone ? 'Phone: ' . $addr->contact_phone : null,
+
+                $addr->address_line1 ? 'Address Line 1: ' . $addr->address_line1 : null,
+                $addr->address_line2 ? 'Landmark: ' . $addr->address_line2 : null,
+
+                $addr->village ? 'Village: ' . $addr->village : null,
+                $addr->taluka ? 'Taluka: ' . $addr->taluka : null,
+                $addr->post_office ? 'Post Office: ' . $addr->post_office : null,
+                $addr->district ? 'District: ' . $addr->district : null,
+
+                ($addr->state || $addr->pincode)
+                    ? 'State & Pincode: ' . trim(($addr->state ?? '') . ' ' . ($addr->pincode ?? ''))
+                    : null,
+
+                $addr->country ? 'Country: ' . $addr->country : null,
+
+                $addr->region ? 'Region: ' . $addr->region : null,
+                $addr->area ? 'Area: ' . $addr->area : null,
+                $addr->route ? 'Route: ' . $addr->route : null,
+                $addr->beat ? 'Beat: ' . $addr->beat : null,
+                $addr->territory ? 'Territory: ' . $addr->territory : null,
+                $addr->zone ? 'Zone: ' . $addr->zone : null,
+                $addr->warehouse ? 'Warehouse: ' . $addr->warehouse : null,
             ]));
 
-            // If address is for both, return two records
             if ($addr->type === 'both') {
                 return [
                     [

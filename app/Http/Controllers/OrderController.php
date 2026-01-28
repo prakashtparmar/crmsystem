@@ -105,11 +105,16 @@ class OrderController extends Controller
 
             $customer = Customer::with(['addresses'])->findOrFail($data['customer_id']);
 
-            // 🔧 FIXED KEYS (billing)
+            // BILLING ADDRESS
             if ($request->filled('new_billing.address_line1')) {
                 $addr = $customer->addresses()->create([
                     'customer_id'   => $customer->id,
                     'type'          => 'billing',
+                    'is_default'    => true,
+                    'label'         => $request->input('new_billing.label'),
+                    'contact_name'  => $request->input('new_billing.contact_name'),
+                    'contact_phone' => $request->input('new_billing.contact_phone'),
+
                     'address_line1' => $request->input('new_billing.address_line1'),
                     'address_line2' => $request->input('new_billing.address_line2'),
                     'village'       => $request->input('new_billing.village'),
@@ -119,16 +124,31 @@ class OrderController extends Controller
                     'pincode'       => $request->input('new_billing.pincode'),
                     'post_office'   => $request->input('new_billing.post_office'),
                     'country'       => 'India',
+
+                    'region'        => $request->input('new_billing.region'),
+                    'area'          => $request->input('new_billing.area'),
+                    'route'         => $request->input('new_billing.route'),
+                    'beat'          => $request->input('new_billing.beat'),
+                    'territory'     => $request->input('new_billing.territory'),
+                    'zone'          => $request->input('new_billing.zone'),
+                    'warehouse'     => $request->input('new_billing.warehouse'),
+                    'latitude'      => $request->input('new_billing.latitude'),
+                    'longitude'     => $request->input('new_billing.longitude'),
                 ]);
 
                 $data['billing_address_id'] = $addr->id;
             }
 
-            // 🔧 FIXED KEYS (shipping)
+            // SHIPPING ADDRESS
             if ($request->filled('new_shipping.address_line1')) {
                 $addr = $customer->addresses()->create([
                     'customer_id'   => $customer->id,
                     'type'          => 'shipping',
+                    'is_default'    => true,
+                    'label'         => $request->input('new_shipping.label'),
+                    'contact_name'  => $request->input('new_shipping.contact_name'),
+                    'contact_phone' => $request->input('new_shipping.contact_phone'),
+
                     'address_line1' => $request->input('new_shipping.address_line1'),
                     'address_line2' => $request->input('new_shipping.address_line2'),
                     'village'       => $request->input('new_shipping.village'),
@@ -138,6 +158,16 @@ class OrderController extends Controller
                     'pincode'       => $request->input('new_shipping.pincode'),
                     'post_office'   => $request->input('new_shipping.post_office'),
                     'country'       => 'India',
+
+                    'region'        => $request->input('new_shipping.region'),
+                    'area'          => $request->input('new_shipping.area'),
+                    'route'         => $request->input('new_shipping.route'),
+                    'beat'          => $request->input('new_shipping.beat'),
+                    'territory'     => $request->input('new_shipping.territory'),
+                    'zone'          => $request->input('new_shipping.zone'),
+                    'warehouse'     => $request->input('new_shipping.warehouse'),
+                    'latitude'      => $request->input('new_shipping.latitude'),
+                    'longitude'     => $request->input('new_shipping.longitude'),
                 ]);
 
                 $data['shipping_address_id'] = $addr->id;
@@ -153,43 +183,13 @@ class OrderController extends Controller
 
             $customer->load('addresses');
 
-            // BILLING ADDRESS TEXT
-            if (!empty($data['billing_address_id'])) {
-                $billingText = optional(
-                    $customer->addresses->firstWhere('id', $data['billing_address_id'])
-                )->formatted();
-            } else {
-                $billingText = trim(implode(', ', array_filter([
-                    $customer->address_line1,
-                    $customer->address_line2,
-                    $customer->village,
-                    $customer->taluka,
-                    $customer->district,
-                    $customer->state,
-                    $customer->pincode,
-                    $customer->country,
-                ])));
-            }
+            $billingText = !empty($data['billing_address_id'])
+                ? optional($customer->addresses->firstWhere('id', $data['billing_address_id']))->formatted()
+                : null;
 
-            // SHIPPING ADDRESS TEXT
-            if (!empty($data['shipping_address_id'])) {
-                $shippingText = optional(
-                    $customer->addresses->firstWhere('id', $data['shipping_address_id'])
-                )->formatted();
-            } elseif ($request->boolean('same_as_billing')) {
-                $shippingText = $billingText;
-            } else {
-                $shippingText = trim(implode(', ', array_filter([
-                    $customer->address_line1,
-                    $customer->address_line2,
-                    $customer->village,
-                    $customer->taluka,
-                    $customer->district,
-                    $customer->state,
-                    $customer->pincode,
-                    $customer->country,
-                ])));
-            }
+            $shippingText = !empty($data['shipping_address_id'])
+                ? optional($customer->addresses->firstWhere('id', $data['shipping_address_id']))->formatted()
+                : ($request->boolean('same_as_billing') ? $billingText : null);
 
             $order = Order::create([
                 'uuid'             => (string) Str::uuid(),
@@ -202,8 +202,8 @@ class OrderController extends Controller
                 'order_date'       => now(),
                 'status'           => 'draft',
                 'payment_status'   => 'unpaid',
-                'billing_address'  => $billingText ?: null,
-                'shipping_address' => $shippingText ?: null,
+                'billing_address'  => $billingText,
+                'shipping_address' => $shippingText,
                 'created_by'       => auth()->id(),
             ]);
 
