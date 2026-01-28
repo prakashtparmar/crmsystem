@@ -52,6 +52,9 @@
     // Extract first 6-digit PIN from address
     preg_match('/\b\d{6}\b/', $slip->address ?? '', $pinMatch);
     $pin = $pinMatch[0] ?? '';
+
+    // Split address into lines
+    $addressLines = preg_split('/\r\n|\r|\n/', $slip->address ?? '');
 @endphp
 
 <div class="label">
@@ -82,9 +85,49 @@
     <div class="box">
         <strong>To,</strong><br>
         <strong>Name:</strong> {{ $slip->customer_name }}<br>
-        <strong>Address:</strong><br>
-        {!! nl2br(e($slip->address)) !!}<br>
-        <strong>Phone 1:</strong> {{ $slip->mobile }}<br>
+
+        @php $addressPrinted = false; @endphp
+
+        @foreach($addressLines as $line)
+            @php $line = trim($line); @endphp
+            @if($line !== '')
+
+                {{-- Handle "State & Pincode" or "State" --}}
+                @if(stripos($line, 'state') === 0)
+                    @php
+                        $clean = preg_replace('/^state\s*&?\s*pincode\s*:?/i', '', $line);
+                        $clean = preg_replace('/^state\s*:?/i', '', $clean);
+                        $parts = preg_split('/[-–]/', trim($clean));
+                        $state = trim($parts[0] ?? '');
+                        $pin2  = trim($parts[1] ?? '');
+                    @endphp
+
+                    @if($pin2)
+                        <strong>Pincode :</strong> {{ $pin2 }}<br>
+                    @endif
+                    <strong>State :</strong> {{ $state }}<br>
+
+                {{-- Normalize "Address Line 1" --}}
+                @elseif(stripos($line, 'address line 1') === 0)
+                    @php [$k, $v] = explode(':', $line, 2); @endphp
+                    <strong>Address:</strong> {{ trim($v) }}<br>
+                    @php $addressPrinted = true; @endphp
+
+                {{-- Any other Key: Value --}}
+                @elseif(strpos($line, ':') !== false)
+                    @php [$k, $v] = explode(':', $line, 2); @endphp
+                    <strong>{{ trim($k) }}:</strong> {{ trim($v) }}<br>
+
+                {{-- First plain line becomes Address --}}
+                @elseif(!$addressPrinted)
+                    <strong>Address:</strong> {{ $line }}<br>
+                    @php $addressPrinted = true; @endphp
+                @endif
+
+            @endif
+        @endforeach
+
+        <strong>Contact Number:</strong> {{ $slip->mobile }}<br>
         @if($slip->alt_mobile)
             <strong>Relative Phone:</strong> {{ $slip->alt_mobile }}<br>
         @endif
