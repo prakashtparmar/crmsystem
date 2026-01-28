@@ -70,52 +70,137 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                if (!document.getElementById('ordersTable')) return;
+document.addEventListener('DOMContentLoaded', function() {
+    if (!document.getElementById('ordersTable')) return;
 
-                const table = $('#ordersTable').DataTable({
-                    dom: 'lBfrtip',
-                    pageLength: 10,
-                    lengthMenu: [
-                        [5, 10, 50, 100],
-                        [5, 10, 50, 100]
-                    ],
-                    autoWidth: false,
-                    scrollX: true,
-                    scrollCollapse: true,
-                    responsive: false,
-                    buttons: [{
-                        extend: 'excelHtml5',
-                        text: 'Export Excel'
-                    }],
-                    initComplete: function() {
-                        buildColGroup();
-                    },
-                    drawCallback: function() {
-                        this.api().columns.adjust();
-                    }
-                });
+    const table = $('#ordersTable').DataTable({
+        dom: 'lBfrtip',
+        pageLength: 10,
+        lengthMenu: [
+            [5, 10, 50, 100],
+            [5, 10, 50, 100]
+        ],
+        autoWidth: false,
+        scrollX: true,
+        scrollCollapse: true,
+        responsive: false,
+        buttons: [{
+            extend: 'excelHtml5',
+            text: 'Export Excel'
+        }],
+        initComplete: function() {
+            buildColGroup();
+            buildColumnToggles(this.api());
+        },
+        drawCallback: function() {
+            this.api().columns.adjust();
+        }
+    });
 
-                $('#selectAll').on('change', function() {
-                    $('.row-checkbox').prop('checked', this.checked);
-                });
+    $('#selectAll').on('change', function() {
+        $('.row-checkbox').prop('checked', this.checked);
+    });
 
-                function buildColGroup() {
-                    const $table = $('#ordersTable');
-                    const $firstRow = $table.find('tbody tr:first td');
+    function buildColGroup() {
+        const $table = $('#ordersTable');
+        const $firstRow = $table.find('tbody tr:first td');
 
-                    if ($firstRow.length) {
-                        let colgroup = '<colgroup>';
-                        $firstRow.each(function() {
-                            colgroup += `<col style="width:${$(this).outerWidth()}px">`;
-                        });
-                        colgroup += '</colgroup>';
-
-                        $table.find('colgroup').remove();
-                        $table.prepend(colgroup);
-                    }
-                }
+        if ($firstRow.length) {
+            let colgroup = '<colgroup>';
+            $firstRow.each(function() {
+                colgroup += `<col style="width:${$(this).outerWidth()}px">`;
             });
-        </script>
+            colgroup += '</colgroup>';
+
+            $table.find('colgroup').remove();
+            $table.prepend(colgroup);
+        }
+    }
+
+    function buildColumnToggles(api) {
+    const $wrap = $('#columnToggles');
+    $wrap.empty();
+
+    const storageKey = 'orders_table_columns';
+    const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+
+    // Master toggle
+    const $master = $(`
+        <label class="flex items-center gap-1 font-semibold mr-4">
+            <input type="checkbox" id="toggleAllCols">
+            <span>All</span>
+        </label>
+    `);
+
+    $wrap.append($master);
+
+    let checkboxes = [];
+
+    api.columns().every(function(index) {
+        const header = $(this.header()).text().trim();
+        if (!header) return; // skip checkbox column
+
+        const isVisible = saved[index] !== undefined ? saved[index] : true;
+
+        // Apply saved state
+        api.column(index).visible(isVisible, false);
+
+        const $label = $(`
+            <label class="flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" data-col="${index}">
+                <span>${header}</span>
+            </label>
+        `);
+
+        const $cb = $label.find('input');
+        $cb.prop('checked', isVisible);
+
+        $cb.on('change', function() {
+            const idx = $(this).data('col');
+            api.column(idx).visible(this.checked, false);
+
+            saved[idx] = this.checked;
+            localStorage.setItem(storageKey, JSON.stringify(saved));
+
+            updateMaster();
+            api.columns.adjust().draw(false);
+        });
+
+        checkboxes.push($cb);
+        $wrap.append($label);
+    });
+
+    function updateMaster() {
+        const allChecked = checkboxes.every(cb => cb.prop('checked'));
+        const noneChecked = checkboxes.every(cb => !cb.prop('checked'));
+
+        $('#toggleAllCols')
+            .prop('checked', allChecked)
+            .prop('indeterminate', !allChecked && !noneChecked);
+    }
+
+    // Master behavior
+    $('#toggleAllCols').on('change', function() {
+        const checked = this.checked;
+
+        checkboxes.forEach($cb => {
+            const idx = $cb.data('col');
+            $cb.prop('checked', checked);
+            api.column(idx).visible(checked, false);
+            saved[idx] = checked;
+        });
+
+        localStorage.setItem(storageKey, JSON.stringify(saved));
+        api.columns.adjust().draw(false);
+    });
+
+    updateMaster();
+    api.columns.adjust().draw(false);
+}
+
+});
+</script>
+
+
     @endpush
 </x-layouts.app>

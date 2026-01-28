@@ -1,6 +1,6 @@
 <div class="p-6">
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4">
-
+<div class="mb-3 p-2 border rounded bg-gray-50 dark:bg-gray-700 text-xs flex flex-wrap gap-3" id="columnToggles"></div>
         <table id="ordersTable" class="w-full text-xs min-w-max border-collapse">
             <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
                 <tr>
@@ -166,5 +166,8 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </div>
 </div>
+
+
