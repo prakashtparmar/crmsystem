@@ -34,18 +34,18 @@ trait CustomerValidation
             'established_year' => 'nullable|digits:4',
             'annual_turnover' => 'nullable|numeric',
 
-            /* ===== Address ===== */
-            'address_line1' => 'nullable|string|max:255',
-            'address_line2' => 'nullable|string|max:255',
-            'village' => 'nullable|string|max:255',
-            'taluka' => 'nullable|string|max:255',
-            'district' => 'nullable|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
-            'pincode' => 'nullable|string|max:6',
-            'post_office' => 'nullable|string|max:255',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
+            // /* ===== Address ===== */
+            // 'address_line1' => 'nullable|string|max:255',
+            // 'address_line2' => 'nullable|string|max:255',
+            // 'village' => 'nullable|string|max:255',
+            // 'taluka' => 'nullable|string|max:255',
+            // 'district' => 'nullable|string|max:255',
+            // 'state' => 'nullable|string|max:255',
+            // 'country' => 'nullable|string|max:255',
+            // 'pincode' => 'nullable|string|max:6',
+            // 'post_office' => 'nullable|string|max:255',
+            // 'latitude' => 'nullable|numeric',
+            // 'longitude' => 'nullable|numeric',
 
             /* ===== Agriculture ===== */
             'land_area' => 'nullable|regex:/^\d+(\.\d+)?$/',
@@ -117,4 +117,23 @@ trait CustomerValidation
 
         return $data;
     }
+
+    protected function validatedAddressData(Request $request): array
+{
+    return $request->validate([
+        'type'          => 'nullable|in:billing,shipping,both',
+        'address_line1' => 'required|string|max:255',
+        'address_line2' => 'nullable|string|max:255',
+        'village'       => 'nullable|string|max:255',
+        'taluka'        => 'nullable|string|max:255',
+        'district'      => 'nullable|string|max:255',
+        'state'         => 'nullable|string|max:255',
+        'country'       => 'nullable|string|max:255',
+        'pincode'       => 'nullable|string|max:10',
+        'post_office'   => 'nullable|string|max:255',
+        'latitude'      => 'nullable|numeric',
+        'longitude'     => 'nullable|numeric',
+    ]);
+}
+
 }

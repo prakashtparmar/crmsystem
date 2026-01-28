@@ -1,3 +1,9 @@
+@php
+    $addr = isset($customer)
+        ? $customer->addresses->firstWhere('is_default', true)
+        : null;
+@endphp
+
 <section
     x-data="{ open: true, editing: {{ isset($customer) ? 'false' : 'true' }} }"
     class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6"
@@ -72,13 +78,13 @@
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Address Line 1</label>
 
             <p x-show="!editing" class="text-sm text-gray-800 dark:text-gray-200">
-                {{ old('address_line1', $customer->address_line1 ?? '') ?: '-' }}
+                {{ old('address_line1', $addr->address_line1 ?? '') ?: '-' }}
             </p>
 
             <input
                 x-show="editing"
                 id="address_line1" name="address_line1"
-                value="{{ old('address_line1', $customer->address_line1 ?? '') }}"
+                value="{{ old('address_line1', $addr->address_line1 ?? '') }}"
                 placeholder="House no, street, area"
                 class="w-full rounded-xl border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm
                        focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
@@ -90,13 +96,13 @@
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Address Line 2</label>
 
             <p x-show="!editing" class="text-sm text-gray-800 dark:text-gray-200">
-                {{ old('address_line2', $customer->address_line2 ?? '') ?: '-' }}
+                {{ old('address_line2', $addr->address_line2 ?? '') ?: '-' }}
             </p>
 
             <input
                 x-show="editing"
                 id="address_line2" name="address_line2"
-                value="{{ old('address_line2', $customer->address_line2 ?? '') }}"
+                value="{{ old('address_line2', $addr->address_line2 ?? '') }}"
                 placeholder="Landmark, building, floor (optional)"
                 class="w-full rounded-xl border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm
                        focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
@@ -108,13 +114,13 @@
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Pincode</label>
 
             <p x-show="!editing" class="text-sm text-gray-800 dark:text-gray-200">
-                {{ old('pincode', $customer->pincode ?? '') ?: '-' }}
+                {{ old('pincode', $addr->pincode ?? '') ?: '-' }}
             </p>
 
             <input
                 x-show="editing"
                 id="pincode" name="pincode"
-                value="{{ old('pincode', $customer->pincode ?? '') }}"
+                value="{{ old('pincode', $addr->pincode ?? '') }}"
                 inputmode="numeric" maxlength="6"
                 oninput="this.value = this.value.replace(/\D/g,'').slice(0,6);"
                 placeholder="Postal code"
@@ -128,13 +134,13 @@
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Post Office (B.O)</label>
 
             <p x-show="!editing" class="text-sm text-gray-800 dark:text-gray-200">
-                {{ old('post_office', $customer->post_office ?? '') ?: '-' }}
+                {{ old('post_office', $addr->post_office ?? '') ?: '-' }}
             </p>
 
             <input
                 x-show="editing"
                 id="post_office" name="post_office"
-                value="{{ old('post_office', $customer->post_office ?? '') }}"
+                value="{{ old('post_office', $addr->post_office ?? '') }}"
                 placeholder="Enter Postal BO"
                 class="w-full rounded-xl border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm
                        focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
@@ -146,13 +152,13 @@
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Village</label>
 
             <p x-show="!editing" class="text-sm text-gray-800 dark:text-gray-200">
-                {{ old('village', $customer->village ?? '') ?: '-' }}
+                {{ old('village', $addr->village ?? '') ?: '-' }}
             </p>
 
             <input
                 x-show="editing"
                 id="village" name="village"
-                value="{{ old('village', $customer->village ?? '') }}"
+                value="{{ old('village', $addr->village ?? '') }}"
                 placeholder="Village / Area"
                 class="w-full rounded-xl border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm
                        focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
@@ -164,13 +170,13 @@
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Taluka</label>
 
             <p x-show="!editing" class="text-sm text-gray-800 dark:text-gray-200">
-                {{ old('taluka', $customer->taluka ?? '') ?: '-' }}
+                {{ old('taluka', $addr->taluka ?? '') ?: '-' }}
             </p>
 
             <input
                 x-show="editing"
                 id="taluka" name="taluka"
-                value="{{ old('taluka', $customer->taluka ?? '') }}"
+                value="{{ old('taluka', $addr->taluka ?? '') }}"
                 placeholder="Taluka"
                 class="w-full rounded-xl border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm
                        focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
@@ -182,13 +188,13 @@
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">District</label>
 
             <p x-show="!editing" class="text-sm text-gray-800 dark:text-gray-200">
-                {{ old('district', $customer->district ?? '') ?: '-' }}
+                {{ old('district', $addr->district ?? '') ?: '-' }}
             </p>
 
             <input
                 x-show="editing"
                 id="district" name="district"
-                value="{{ old('district', $customer->district ?? '') }}"
+                value="{{ old('district', $addr->district ?? '') }}"
                 placeholder="District"
                 class="w-full rounded-xl border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm
                        focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
@@ -200,13 +206,13 @@
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">State</label>
 
             <p x-show="!editing" class="text-sm text-gray-800 dark:text-gray-200">
-                {{ old('state', $customer->state ?? '') ?: '-' }}
+                {{ old('state', $addr->state ?? '') ?: '-' }}
             </p>
 
             <input
                 x-show="editing"
                 id="state" name="state"
-                value="{{ old('state', $customer->state ?? '') }}"
+                value="{{ old('state', $addr->state ?? '') }}"
                 placeholder="State"
                 class="w-full rounded-xl border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm
                        focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"
@@ -218,13 +224,13 @@
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Country</label>
 
             <p x-show="!editing" class="text-sm text-gray-800 dark:text-gray-200">
-                {{ old('country', $customer->country ?? 'India') ?: '-' }}
+                {{ old('country', $addr->country ?? 'India') ?: '-' }}
             </p>
 
             <input
                 x-show="editing"
                 id="country" name="country"
-                value="{{ old('country', $customer->country ?? 'India') }}"
+                value="{{ old('country', $addr->country ?? 'India') }}"
                 placeholder="Country"
                 class="w-full rounded-xl border-gray-300 dark:border-gray-700 dark:bg-gray-900 text-sm
                        focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2"

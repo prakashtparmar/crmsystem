@@ -100,37 +100,46 @@ class OrderController extends Controller
         'discount_amount'     => 'nullable|numeric|min:0',
     ]);
 
-
     try {
         DB::transaction(function () use ($data, $request) {
 
             $customer = Customer::with(['addresses'])->findOrFail($data['customer_id']);
 
-            if ($request->filled('new_billing.line1')) {
+            // 🔧 FIXED KEYS (billing)
+            if ($request->filled('new_billing.address_line1')) {
                 $addr = $customer->addresses()->create([
                     'customer_id'   => $customer->id,
                     'type'          => 'billing',
-                    'address_line1' => $request->input('new_billing.line1'),
-                    'address_line2' => $request->input('new_billing.line2'),
-                    'district'      => $request->input('new_billing.city'),
+                    'address_line1' => $request->input('new_billing.address_line1'),
+                    'address_line2' => $request->input('new_billing.address_line2'),
+                    'village'       => $request->input('new_billing.village'),
+                    'taluka'        => $request->input('new_billing.taluka'),
+                    'district'      => $request->input('new_billing.district'),
                     'state'         => $request->input('new_billing.state'),
                     'pincode'       => $request->input('new_billing.pincode'),
+                    'post_office'   => $request->input('new_billing.post_office'),
                     'country'       => 'India',
                 ]);
+
                 $data['billing_address_id'] = $addr->id;
             }
 
-            if ($request->filled('new_shipping.line1')) {
+            // 🔧 FIXED KEYS (shipping)
+            if ($request->filled('new_shipping.address_line1')) {
                 $addr = $customer->addresses()->create([
                     'customer_id'   => $customer->id,
                     'type'          => 'shipping',
-                    'address_line1' => $request->input('new_shipping.line1'),
-                    'address_line2' => $request->input('new_shipping.line2'),
-                    'district'      => $request->input('new_shipping.city'),
+                    'address_line1' => $request->input('new_shipping.address_line1'),
+                    'address_line2' => $request->input('new_shipping.address_line2'),
+                    'village'       => $request->input('new_shipping.village'),
+                    'taluka'        => $request->input('new_shipping.taluka'),
+                    'district'      => $request->input('new_shipping.district'),
                     'state'         => $request->input('new_shipping.state'),
                     'pincode'       => $request->input('new_shipping.pincode'),
+                    'post_office'   => $request->input('new_shipping.post_office'),
                     'country'       => 'India',
                 ]);
+
                 $data['shipping_address_id'] = $addr->id;
             }
 
@@ -144,64 +153,59 @@ class OrderController extends Controller
 
             $customer->load('addresses');
 
-// BILLING ADDRESS TEXT
-if (!empty($data['billing_address_id'])) {
-    // Selected from customer_addresses
-    $billingText = optional(
-        $customer->addresses->firstWhere('id', $data['billing_address_id'])
-    )->formatted();
-} else {
-    // Use legacy address from customers table
-    $billingText = trim(implode(', ', array_filter([
-        $customer->address_line1,
-        $customer->address_line2,
-        $customer->village,
-        $customer->taluka,
-        $customer->district,
-        $customer->state,
-        $customer->pincode,
-        $customer->country,
-    ])));
-}
+            // BILLING ADDRESS TEXT
+            if (!empty($data['billing_address_id'])) {
+                $billingText = optional(
+                    $customer->addresses->firstWhere('id', $data['billing_address_id'])
+                )->formatted();
+            } else {
+                $billingText = trim(implode(', ', array_filter([
+                    $customer->address_line1,
+                    $customer->address_line2,
+                    $customer->village,
+                    $customer->taluka,
+                    $customer->district,
+                    $customer->state,
+                    $customer->pincode,
+                    $customer->country,
+                ])));
+            }
 
-// SHIPPING ADDRESS TEXT
-if (!empty($data['shipping_address_id'])) {
-    // Selected from customer_addresses
-    $shippingText = optional(
-        $customer->addresses->firstWhere('id', $data['shipping_address_id'])
-    )->formatted();
-} elseif ($request->boolean('same_as_billing')) {
-    $shippingText = $billingText;
-} else {
-    // Use legacy address from customers table
-    $shippingText = trim(implode(', ', array_filter([
-        $customer->address_line1,
-        $customer->address_line2,
-        $customer->village,
-        $customer->taluka,
-        $customer->district,
-        $customer->state,
-        $customer->pincode,
-        $customer->country,
-    ])));
-}
+            // SHIPPING ADDRESS TEXT
+            if (!empty($data['shipping_address_id'])) {
+                $shippingText = optional(
+                    $customer->addresses->firstWhere('id', $data['shipping_address_id'])
+                )->formatted();
+            } elseif ($request->boolean('same_as_billing')) {
+                $shippingText = $billingText;
+            } else {
+                $shippingText = trim(implode(', ', array_filter([
+                    $customer->address_line1,
+                    $customer->address_line2,
+                    $customer->village,
+                    $customer->taluka,
+                    $customer->district,
+                    $customer->state,
+                    $customer->pincode,
+                    $customer->country,
+                ])));
+            }
 
-$order = Order::create([
-    'uuid'             => (string) Str::uuid(),
-    'order_code'       => 'ORD-' . now()->format('Ymd-His'),
-    'customer_id'      => $customer->id,
-    'customer_name'    => $customer->display_name
-        ?? trim($customer->first_name . ' ' . $customer->last_name),
-    'customer_email'   => $customer->email,
-    'customer_phone'   => $customer->mobile,
-    'order_date'       => now(),
-    'status'           => 'draft',
-    'payment_status'   => 'unpaid',
-    'billing_address'  => $billingText ?: null,
-    'shipping_address' => $shippingText ?: null,
-    'created_by'       => auth()->id(),
-]);
-
+            $order = Order::create([
+                'uuid'             => (string) Str::uuid(),
+                'order_code'       => 'ORD-' . now()->format('Ymd-His'),
+                'customer_id'      => $customer->id,
+                'customer_name'    => $customer->display_name
+                    ?? trim($customer->first_name . ' ' . $customer->last_name),
+                'customer_email'   => $customer->email,
+                'customer_phone'   => $customer->mobile,
+                'order_date'       => now(),
+                'status'           => 'draft',
+                'payment_status'   => 'unpaid',
+                'billing_address'  => $billingText ?: null,
+                'shipping_address' => $shippingText ?: null,
+                'created_by'       => auth()->id(),
+            ]);
 
             $subTotal = 0;
             $taxTotal = 0;
@@ -249,6 +253,7 @@ $order = Order::create([
         return back()->with('error', 'Failed to place order. Please try again.');
     }
 }
+
 
 
     public function show(Order $order)

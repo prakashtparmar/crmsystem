@@ -19,24 +19,11 @@
         <form action="{{ route('orders.store') }}" method="POST" class="space-y-6">
             @csrf
             <input type="hidden" name="customer_id" value="{{ $customer->id }}">
-<!-- Addresses -->
+      <!-- Addresses -->
 <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border space-y-4">
     <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
         Addresses
     </h3>
-
-    @php
-        $defaultText = trim(implode(', ', array_filter([
-            $customer->address_line1,
-            $customer->address_line2,
-            $customer->village,
-            $customer->taluka,
-            $customer->district,
-            $customer->state,
-            $customer->pincode,
-            $customer->country,
-        ])));
-    @endphp
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -45,29 +32,14 @@
             <label class="block text-xs text-gray-500 mb-2">Billing Address</label>
 
             <div id="billingList" class="space-y-2">
-
-                @if($defaultText)
-                    <label class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer bg-blue-50 dark:bg-gray-800">
-                        <input type="radio"
-                               name="billing_address_id"
-                               value=""
-                               class="mt-1 rounded"
-                               checked>
-                        <div class="text-sm text-gray-700 dark:text-gray-300 leading-snug">
-                            <div class="font-medium">Default Address</div>
-                            <div class="text-xs text-gray-500">
-                                {{ $defaultText }}
-                            </div>
-                        </div>
-                    </label>
-                @endif
-
                 @foreach ($customer->addresses as $addr)
-                    <label class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <label
+                        class="address-item flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
                         <input type="radio"
                                name="billing_address_id"
                                value="{{ $addr->id }}"
-                               class="mt-1 rounded">
+                               class="mt-1 rounded"
+                               @checked($loop->first)>
 
                         <div class="text-sm text-gray-700 dark:text-gray-300 leading-snug">
                             <div class="font-medium">
@@ -88,7 +60,7 @@
             </div>
 
             <button type="button"
-                class="mt-3 text-xs px-3 py-1 rounded-md border text-blue-600 hover:bg-blue-50"
+                class="mt-3 text-xs px-3 py-1 rounded-md border text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-800"
                 onclick="document.querySelector('.new-billing').classList.toggle('hidden')">
                 + Add New Address
             </button>
@@ -107,39 +79,47 @@
 
                     <div>
                         <label class="block text-xs font-medium">Pincode</label>
-                        <input name="new_billing[pincode]" id="billing_pincode" class="w-full rounded-xl border px-3 py-2">
+                        <input name="new_billing[pincode]" id="billing_pincode"
+                               class="w-full rounded-xl border px-3 py-2">
                     </div>
 
                     <div>
                         <label class="block text-xs font-medium">Post Office</label>
-                        <input name="new_billing[post_office]" id="billing_post_office" class="w-full rounded-xl border px-3 py-2">
+                        <input name="new_billing[post_office]" id="billing_post_office"
+                               class="w-full rounded-xl border px-3 py-2">
                     </div>
 
                     <div>
                         <label class="block text-xs font-medium">Village</label>
-                        <input name="new_billing[village]" id="billing_village" class="w-full rounded-xl border px-3 py-2">
+                        <input name="new_billing[village]" id="billing_village"
+                               class="w-full rounded-xl border px-3 py-2">
                     </div>
 
                     <div>
                         <label class="block text-xs font-medium">Taluka</label>
-                        <input name="new_billing[taluka]" id="billing_taluka" class="w-full rounded-xl border px-3 py-2">
+                        <input name="new_billing[taluka]" id="billing_taluka"
+                               class="w-full rounded-xl border px-3 py-2">
                     </div>
 
                     <div>
                         <label class="block text-xs font-medium">District</label>
-                        <input name="new_billing[district]" id="billing_district" class="w-full rounded-xl border px-3 py-2">
+                        <input name="new_billing[district]" id="billing_district"
+                               class="w-full rounded-xl border px-3 py-2">
                     </div>
 
                     <div>
                         <label class="block text-xs font-medium">State</label>
-                        <input name="new_billing[state]" id="billing_state" class="w-full rounded-xl border px-3 py-2">
+                        <input name="new_billing[state]" id="billing_state"
+                               class="w-full rounded-xl border px-3 py-2">
                     </div>
                 </div>
 
                 <div class="mt-3 text-right">
-                    <button type="button" data-type="billing"
-                        class="save-address text-xs px-3 py-1 rounded-md border bg-blue-600 text-white">
-                        Save Billing Address
+                    <button type="button"
+                        data-type="billing"
+                        data-targets="billingList,shippingList"
+                        class="save-address text-xs px-3 py-1 rounded-md border bg-blue-600 text-white hover:bg-blue-700">
+                        Save Address
                     </button>
                 </div>
             </div>
@@ -150,29 +130,14 @@
             <label class="block text-xs text-gray-500 mb-2">Shipping Address</label>
 
             <div id="shippingList" class="space-y-2">
-
-                @if($defaultText)
-                    <label class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer bg-blue-50 dark:bg-gray-800">
-                        <input type="radio"
-                               name="shipping_address_id"
-                               value=""
-                               class="mt-1 rounded"
-                               checked>
-                        <div class="text-sm text-gray-700 dark:text-gray-300 leading-snug">
-                            <div class="font-medium">Default Address</div>
-                            <div class="text-xs text-gray-500">
-                                {{ $defaultText }}
-                            </div>
-                        </div>
-                    </label>
-                @endif
-
                 @foreach ($customer->addresses as $addr)
-                    <label class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <label
+                        class="address-item flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
                         <input type="radio"
                                name="shipping_address_id"
                                value="{{ $addr->id }}"
-                               class="mt-1 rounded">
+                               class="mt-1 rounded"
+                               @checked($loop->first)>
 
                         <div class="text-sm text-gray-700 dark:text-gray-300 leading-snug">
                             <div class="font-medium">
@@ -191,15 +156,13 @@
                     </label>
                 @endforeach
             </div>
-
-            <label class="inline-flex items-center mt-3 text-xs text-gray-600 dark:text-gray-400">
-                <input type="checkbox" name="same_as_billing" value="1" class="mr-2 rounded">
-                Same as Billing
-            </label>
         </div>
 
     </div>
 </div>
+
+
+
 
 
             <!-- Items -->
@@ -395,98 +358,97 @@
     });
 </script>
 <script>
-    document.addEventListener('click', async function(e) {
-        const btn = e.target.closest('.save-address');
-        if (!btn) return;
+document.addEventListener('click', async function(e) {
+    const btn = e.target.closest('.save-address');
+    if (!btn) return;
 
-        e.preventDefault(); // safety
+    e.preventDefault();
 
-        console.log('Save clicked');
+    const type = btn.dataset.type || 'billing'; // keep compatibility
+    const box = btn.closest('.new-billing'); // single form source
 
-        const type = btn.dataset.type;
-        const box = btn.closest(type === 'billing' ? '.new-billing' : '.new-shipping');
+    if (!box) {
+        console.warn('Box not found');
+        return;
+    }
 
-        if (!box) {
-            console.warn('Box not found');
-            return;
-        }
+    const data = {
+        type,
+        address_line1: box.querySelector('[name*="address_line1"]')?.value || '',
+        address_line2: box.querySelector('[name*="address_line2"]')?.value || '',
+        pincode: box.querySelector('[name*="pincode"]')?.value || '',
+        post_office: box.querySelector('[name*="post_office"]')?.value || '',
+        village: box.querySelector('[name*="village"]')?.value || '',
+        taluka: box.querySelector('[name*="taluka"]')?.value || '',
+        district: box.querySelector('[name*="district"]')?.value || '',
+        state: box.querySelector('[name*="state"]')?.value || '',
+    };
 
-        const data = {
-            type,
-            address_line1: box.querySelector('[name*="address_line1"]')?.value || '',
-            address_line2: box.querySelector('[name*="address_line2"]')?.value || '',
-            pincode: box.querySelector('[name*="pincode"]')?.value || '',
-            post_office: box.querySelector('[name*="post_office"]')?.value || '',
-            village: box.querySelector('[name*="village"]')?.value || '',
-            taluka: box.querySelector('[name*="taluka"]')?.value || '',
-            district: box.querySelector('[name*="district"]')?.value || '',
-            state: box.querySelector('[name*="state"]')?.value || '',
-        };
+    const customerId = "{{ $customer->id }}";
 
-        console.log('Payload:', data);
+    let res;
+    try {
+        res = await fetch(`/customers/${customerId}/addresses`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(data)
+        });
+    } catch (err) {
+        alert('Network error');
+        console.error(err);
+        return;
+    }
 
-        const customerId = "{{ $customer->id }}";
+    if (!res.ok) {
+        const text = await res.text();
+        console.error(text);
+        alert('Server error: ' + res.status);
+        return;
+    }
 
-        let res;
-        try {
-            res = await fetch(`/customers/${customerId}/addresses`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                credentials: 'same-origin', // IMPORTANT for Laravel
-                body: JSON.stringify(data)
-            });
+    const json = await res.json();
 
-        } catch (err) {
-            alert('Network error');
-            console.error(err);
-            return;
-        }
-
-        console.log('Response status:', res.status);
-
-        if (!res.ok) {
-            const text = await res.text();
-            console.error(text);
-            alert('Server error: ' + res.status);
-            return;
-        }
-
-        const json = await res.json();
-        console.log('Saved:', json);
-
-        const list = document.getElementById(
-    type === 'billing' ? 'billingList' : 'shippingList'
-);
-
-if (!list) {
-    alert('Saved, but list not found');
-    return;
-}
-
-const label = document.createElement('label');
-label.className =
-    'flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800';
-
-label.innerHTML = `
+    const html = `
+<label class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
     <input type="radio"
-           name="${type}_address_id"
-           value="${json.id}"
            class="mt-1 rounded"
+           value="${json.id}"
            checked>
-
     <div class="text-sm text-gray-700 dark:text-gray-300 leading-snug">
         <div class="font-medium">${json.text}</div>
     </div>
-`;
+</label>`;
 
-list.appendChild(label);
+    const billingList  = document.getElementById('billingList');
+    const shippingList = document.getElementById('shippingList');
 
-// Hide form after save
-box.classList.add('hidden');
+    if (billingList) {
+        const el = document.createElement('div');
+        el.innerHTML = html.replace(
+            '<input',
+            '<input name="billing_address_id"'
+        );
+        billingList.appendChild(el.firstElementChild);
+    }
 
-    });
+    if (shippingList) {
+        const el = document.createElement('div');
+        el.innerHTML = html.replace(
+            '<input',
+            '<input name="shipping_address_id"'
+        );
+        shippingList.appendChild(el.firstElementChild);
+    }
+
+    // Clear inputs
+    box.querySelectorAll('input').forEach(i => i.value = '');
+
+    // Hide form after save
+    box.classList.add('hidden');
+});
 </script>

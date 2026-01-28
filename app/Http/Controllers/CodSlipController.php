@@ -16,11 +16,25 @@ class CodSlipController extends Controller
         }
 
         DB::transaction(function () use ($order) {
+
+            // Break stored shipping_address into lines
+            $lines = preg_split('/\r\n|\r|\n/', $order->shipping_address ?? '');
+
+            // Convert to Key : Value format
+            $address = implode("\n", array_filter([
+                isset($lines[0]) ? 'Address Line 1: ' . trim($lines[0]) : null,
+                isset($lines[1]) ? 'Landmark: ' . trim($lines[1]) : null,
+                isset($lines[2]) ? 'Post Office: ' . trim($lines[2]) : null,
+                isset($lines[3]) ? 'Taluka: ' . trim($lines[3]) : null,
+                isset($lines[4]) ? 'District: ' . trim($lines[4]) : null,
+                isset($lines[5]) ? 'State & Pincode: ' . trim($lines[5]) : null,
+            ]));
+
             $order->codSlip()->create([
                 'customer_name' => $order->customer_name,
                 'mobile'        => $order->customer_phone,
                 'alt_mobile'    => $order->alternate_phone ?? null,
-                'address'       => $order->shipping_address,
+                'address'       => $address,
                 'cod_amount'    => $order->grand_total,
             ]);
         });

@@ -10,7 +10,6 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Customers\Concerns\CustomerValidation;
 
-
 class CustomerController extends Controller
 {
     use CustomerValidation;
@@ -36,17 +35,26 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
-        $data = $this->validatedCustomerData($request);
+        $customerData = $this->validatedCustomerData($request);
+        $addressData  = $this->validatedAddressData($request);
 
-        DB::transaction(function () use ($data) {
+        DB::transaction(function () use ($customerData, $addressData) {
             $lastId = Customer::lockForUpdate()->max('id') ?? 0;
             $customerCode = 'CUST-' . str_pad($lastId + 1, 6, '0', STR_PAD_LEFT);
 
-            Customer::create(array_merge($data, [
+            $customer = Customer::create(array_merge($customerData, [
                 'uuid'          => (string) Str::uuid(),
                 'customer_code' => $customerCode,
                 'created_by'    => auth()->id(),
             ]));
+
+            // Create default address
+            if (!empty($addressData['address_line1'])) {
+                $customer->addresses()->create(array_merge($addressData, [
+                    'type'       => 'shipping',
+                    'is_default' => true,
+                ]));
+            }
         });
 
         return redirect()
@@ -83,30 +91,46 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
+        $customer->load('addresses');
         return view('customers.edit', compact('customer'));
     }
 
     public function update(Request $request, Customer $customer)
-{
-    $data = $this->validatedCustomerData($request, $customer->id);
+    {
+        $customerData = $this->validatedCustomerData($request, $customer->id);
+        $addressData  = $this->validatedAddressData($request);
 
-    $customer->update(array_merge($data, [
-        'updated_by' => auth()->id(),
-    ]));
+        DB::transaction(function () use ($customer, $customerData, $addressData) {
+            $customer->update(array_merge($customerData, [
+                'updated_by' => auth()->id(),
+            ]));
 
-    // If main Update Customer button was clicked
-    if ($request->has('final_submit')) {
+            if (!empty($addressData['address_line1'])) {
+                $addr = $customer->addresses()
+                    ->where('is_default', true)
+                    ->first();
+
+                if ($addr) {
+                    $addr->update($addressData);
+                } else {
+                    $customer->addresses()->create(array_merge($addressData, [
+                        'type'       => 'shipping',
+                        'is_default' => true,
+                    ]));
+                }
+            }
+        });
+
+        if (request()->has('final_submit')) {
+            return redirect()
+                ->route('customers.index')
+                ->with('success', 'Customer updated successfully.');
+        }
+
         return redirect()
-            ->route('customers.index')
-            ->with('success', 'Customer updated successfully.');
+            ->route('customers.edit', $customer)
+            ->with('success', 'Customer details updated.');
     }
-
-    // Otherwise stay on the same edit page
-    return redirect()
-        ->route('customers.edit', $customer)
-        ->with('success', 'Customer details updated.');
-}
-
 
     public function destroy(Customer $customer)
     {
